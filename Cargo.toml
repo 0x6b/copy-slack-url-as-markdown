@@ -1,0 +1,24 @@
+[package]
+name = "copy-slack-url-as-markdown"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+# Error handling
+anyhow = "1.0.86"
+
+# Clipboard
+arboard = "3.4.0"
+
+# Command line arguments
+clap = { version = "4.5.16", features = ["derive", "env", "wrap_help"] }
+
+# Ser/de
+serde = { version = "1.0.209", features = ["derive"] }
+serde_qs = "0.13.0"
+
+# URL parsing
+url = "2.5.2"
+
+# Slack API
+slack_api = { git = "https://github.com/malikolivier/slack-rs-api", rev = "3dd4aea981cea29d92f526b8f6483b25faa4b9ff", features = ["sync", "reqwest_blocking", "with_rustls"] }
