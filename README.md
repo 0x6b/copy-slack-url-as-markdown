@@ -11,8 +11,6 @@ Following permission scopes would be required.
 - `channels::history`
 - `channels::read`
 - `groups:history`
-- `usergroups:read`
-- `users.profile:read`
 
 ## Usage
 
