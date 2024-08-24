@@ -27,3 +27,5 @@ url = "2.5.2"
 
 # Slack API
 slack_api = { git = "https://github.com/malikolivier/slack-rs-api", rev = "3dd4aea981cea29d92f526b8f6483b25faa4b9ff", features = ["sync", "reqwest_blocking", "with_rustls"] }
+reqwest = { version = "0.12.7", features = ["json"] }
+tokio = { version = "1.39.3", features = ["rt", "macros", "net"] }
