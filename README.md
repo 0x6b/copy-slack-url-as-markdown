@@ -8,14 +8,14 @@ Expose your Slack user token as `SLACK_TOKEN` environment variable to use the ut
 
 Following permission scopes would be required.
 
-- `channels::history`
-- `channels::read`
-- `groups:history`
-- `groups:read`
-- `im:history`
-- `im:read`
-- `mpim:history`
-- `mpim:read`
+- [`channels:history`](https://api.slack.com/scopes/channels:history)
+- [`groups:history`](https://api.slack.com/scopes/groups:history)
+- [`im:history`](https://api.slack.com/scopes/im:history)
+- [`mpim:history`](https://api.slack.com/scopes/mpim:history)
+- [`channels:read`](https://api.slack.com/scopes/channels:read)
+- [`groups:read`](https://api.slack.com/scopes/groups:read)
+- [`im:read`](https://api.slack.com/scopes/im:read)
+- [`mpim:read`](https://api.slack.com/scopes/mpim:read)
 
 ## Usage
 
@@ -40,6 +40,10 @@ Options:
 MIT. See [LICENSE](LICENSE) for details.
 
 ## References
+
+- [Web API methods | Slack](https://api.slack.com/methods)
+- [Token types | Slack](https://api.slack.com/concepts/token-types)
+- [Permission scopes | Slack](https://api.slack.com/scopes)
 
 ## Privacy
 
