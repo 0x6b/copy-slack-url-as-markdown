@@ -6,6 +6,7 @@ use crate::{args::Args, message::SlackMessage};
 
 mod args;
 mod message;
+mod slack_client;
 
 fn main() -> Result<()> {
     let Args { token, quote, prefix, style } = Args::parse();
