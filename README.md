@@ -32,5 +32,7 @@ Options:
 
 ## License
 
+MIT. See [LICENSE](LICENSE) for details.
+
 ## References
 
