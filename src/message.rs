@@ -4,6 +4,7 @@ use anyhow::{anyhow, bail, Error, Result};
 use serde::Deserialize;
 use slack_api::sync as slack;
 use url::Url;
+use crate::slack_client;
 
 #[derive(Deserialize, Debug, Clone, Copy)]
 struct QueryParams {
@@ -62,6 +63,9 @@ impl<'a> TryFrom<&'a str> for SlackMessage<Initialized<'a>> {
 
 impl SlackMessage<Initialized<'_>> {
     pub fn resolve(&self, token: &str) -> Result<SlackMessage<Resolved>> {
+        let client = slack_client::Client::new(token)?;
+        // let channel_name = client.conversations_info(&self.channel_id).await?.channel.name_normalized;
+
         let client = slack::default_client()?;
         let channel = Cow::from(&self.channel_id);
 
@@ -77,6 +81,7 @@ impl SlackMessage<Initialized<'_>> {
         .channel
         .name_normalized;
 
+        println!("Self: {:#?}", self);
         let history = slack::conversations::history(
             &client,
             token,
