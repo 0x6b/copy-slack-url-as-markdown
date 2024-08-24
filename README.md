@@ -36,3 +36,6 @@ MIT. See [LICENSE](LICENSE) for details.
 
 ## References
 
+## Privacy
+
+This utility does not share any fetched Slack conversations with third parties.
