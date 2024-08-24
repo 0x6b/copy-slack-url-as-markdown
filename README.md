@@ -23,12 +23,11 @@ Copy Slack URL as Markdown
 Usage: copy-slack-url-as-markdown [OPTIONS] --token <TOKEN>
 
 Options:
-  -t, --token <TOKEN>    Slack API token [env:
-                         SLACK_TOKEN=xoxp-...]
+  -t, --token <TOKEN>    Slack API token [env: SLACK_TOKEN=xoxp-...]
   -q, --quote            Include the message body as a quote
       --prefix <PREFIX>  Prefix to the title [default: Slack#]
-      --style <STYLE>    Style of the quoted message in rich text [default: "color: rgb(96, 96,
-                         96);"]
+      --style <STYLE>    Style of the quoted message in rich text [default:
+                         "color: rgb(96, 96, 96);"]
   -h, --help             Print help
   -V, --version          Print version
 ```
