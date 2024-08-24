@@ -2,29 +2,10 @@ use anyhow::Result;
 use arboard::Clipboard;
 use clap::Parser;
 
-use crate::message::SlackMessage;
+use crate::{args::Args, message::SlackMessage};
 
+mod args;
 mod message;
-
-#[derive(Parser)]
-#[clap(version, author, about)]
-pub struct Args {
-    /// Slack API token.
-    #[arg(short, long, env = "SLACK_TOKEN")]
-    pub token: String,
-
-    /// Include the message body as a quote.
-    #[clap(short, long)]
-    pub quote: bool,
-
-    /// Prefix to the title.
-    #[clap(long, default_value = "Slack#")]
-    pub prefix: String,
-
-    /// Style of the quoted message in rich text.
-    #[clap(long, default_value = "color: rgb(96, 96, 96);")]
-    pub style: String,
-}
 
 fn main() -> Result<()> {
     let Args { token, quote, prefix, style } = Args::parse();
