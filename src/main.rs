@@ -21,8 +21,8 @@ pub struct Args {
     #[clap(long, default_value = "Slack#")]
     pub prefix: String,
 
-    /// Style of the quoted message.
-    #[clap(long, default_value = "color: rgb(113, 133, 153); font-style: italic;")]
+    /// Style of the quoted message in rich text.
+    #[clap(long, default_value = "color: rgb(96, 96, 96);")]
     pub style: String,
 }
 
@@ -34,34 +34,25 @@ fn main() -> Result<()> {
     let message = SlackMessage::try_from(content.as_str())?;
     let message = message.resolve(&token)?;
 
-    let body_text = if quote {
-        format!(
-            "\n\n{}",
-            message
-                .body
-                .lines()
-                .map(|l| format!("> {l}"))
-                .collect::<Vec<_>>()
-                .join("\n")
+    let title = format!("{}{}", prefix, message.channel_name);
+    let url = &message.url;
+    let (text, html) = if quote {
+        let body = &message.body;
+        (
+            format!(
+                "\n\n{}",
+                body.lines().map(|l| format!("> {l}")).collect::<Vec<_>>().join("\n")
+            ),
+            format!(r#"<blockquote style="{style}">{body}</blockquote>"#),
         )
     } else {
-        "".to_string()
+        ("".to_string(), "".to_string())
     };
 
-    let body_html = if quote {
-        format!(
-            r#"<blockquote style="{}">{}</blockquote>"#,
-            style,
-            message.body
-        )
-    } else {
-        "".to_string()
-    };
+    let text = format!("[{title}]({url}){text}");
+    let html = format!(r#"<a href="{url}">{title}</a>{html}"#);
 
-    let text = format!("[{}{}]({}){}", prefix, message.channel_name, message.url, body_text);
-    let html = format!(r#"<a href="{}">{}{}</a>{}"#, message.url, prefix, message.channel_name, body_html);
-
-    match clipboard.set_html(html.trim(), Some(&text)) {
+    match clipboard.set_html(html.trim(), Some(text.trim())) {
         Ok(_) => println!("{text}"),
         Err(why) => println!("{why}"),
     }

@@ -54,7 +54,9 @@ impl<'a> TryFrom<&'a str> for SlackMessage<Initialized<'a>> {
 
     fn try_from(text: &'a str) -> Result<SlackMessage<Initialized<'a>>> {
         let (channel_id, ts, thread_ts) = Self::parse(text.trim())?;
-        Ok(SlackMessage { state:  Initialized { url: text, channel_id, ts, thread_ts } })
+        Ok(SlackMessage {
+            state: Initialized { url: text, channel_id, ts, thread_ts },
+        })
     }
 }
 
