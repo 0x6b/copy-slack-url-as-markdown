@@ -4,10 +4,14 @@ use clap::Parser;
 #[clap(version, author, about)]
 pub struct Args {
     /// Slack API token.
-    #[arg(short, long, env = "SLACK_TOKEN")]
+    #[arg(long, env = "SLACK_TOKEN")]
     pub token: String,
 
-    /// Include the message body as a quote.
+    /// Timezone to use i.e. Asia/Tokyo. Defaults to UTC.
+    #[arg(short, long)]
+    pub timezone: Option<String>,
+
+    /// Include the message body as a quote, with timestamp
     #[clap(short, long)]
     pub quote: bool,
 
