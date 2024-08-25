@@ -1,9 +1,13 @@
-use std::{borrow::Cow, num::ParseFloatError, ops::Deref};
+use std::{num::ParseFloatError, ops::Deref};
 
 use anyhow::{anyhow, bail, Error, Result};
 use serde::Deserialize;
 use url::Url;
-use crate::slack_client;
+
+use crate::{
+    slack_client,
+    slack_client::{ConversationHistoryQuery, ConversationInfoQuery, ConversationRepliesQuery},
+};
 
 #[derive(Deserialize, Debug, Clone, Copy)]
 struct QueryParams {
@@ -63,18 +67,42 @@ impl<'a> TryFrom<&'a str> for SlackMessage<Initialized<'a>> {
 impl SlackMessage<Initialized<'_>> {
     pub async fn resolve(&self, token: &str) -> Result<SlackMessage<Resolved>> {
         let client = slack_client::Client::new(token)?;
-        let channel_name = client.conversations_info(&self.channel_id).await?.channel.name_normalized;
-        let history = client.conversations_history(&self.channel_id, self.ts, self.ts, 1).await?;
+        let channel_name = client
+            .conversations_info(&ConversationInfoQuery { channel: self.channel_id.clone() })
+            .await?
+            .channel
+            .name_normalized;
+        let history = client
+            .conversations_history(&ConversationHistoryQuery {
+                channel: self.channel_id.clone(),
+                latest: self.ts,
+                oldest: self.ts,
+                limit: 1,
+                inclusive: true,
+            })
+            .await?;
         let mut body = match history {
             Some(messages) => messages.into_iter().filter_map(|m| m.text).collect::<Vec<String>>(),
             None => {
                 bail!("No messages found")
             }
         };
+
         if body.join("").is_empty() {
-            let replies = client.conversations_replies(&self.channel_id, self.thread_ts.unwrap_or(self.ts), self.ts, self.ts, 1).await?;
+            let replies = client
+                .conversations_replies(&ConversationRepliesQuery {
+                    channel: self.channel_id.clone(),
+                    ts: self.thread_ts.unwrap_or(self.ts),
+                    latest: self.ts,
+                    oldest: self.ts,
+                    limit: 1,
+                    inclusive: true,
+                })
+                .await?;
             body = match replies {
-                Some(replies) => replies.into_iter().filter_map(|m| m.text).collect::<Vec<String>>(),
+                Some(replies) => {
+                    replies.into_iter().filter_map(|m| m.text).collect::<Vec<String>>()
+                }
                 None => bail!("No messages found"),
             }
         }

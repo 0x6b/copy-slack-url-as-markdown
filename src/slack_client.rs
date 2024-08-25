@@ -1,10 +1,35 @@
 use anyhow::Result;
 use reqwest::header::{HeaderMap, HeaderValue, AUTHORIZATION, CONTENT_TYPE};
-use serde::{de::DeserializeOwned, Deserialize};
+use serde::{de::DeserializeOwned, Deserialize, Serialize};
+use serde_qs::to_string;
 
 pub struct Client {
     endpoint: String,
     client: reqwest::Client,
+}
+
+#[derive(Serialize)]
+pub struct ConversationInfoQuery {
+    pub channel: String,
+}
+
+#[derive(Serialize)]
+pub struct ConversationHistoryQuery {
+    pub channel: String,
+    pub latest: f64,
+    pub oldest: f64,
+    pub limit: u64,
+    pub inclusive: bool,
+}
+
+#[derive(Serialize)]
+pub struct ConversationRepliesQuery {
+    pub channel: String,
+    pub ts: f64,
+    pub latest: f64,
+    pub oldest: f64,
+    pub limit: u64,
+    pub inclusive: bool,
 }
 
 impl Client {
@@ -19,24 +44,26 @@ impl Client {
         Ok(Self { endpoint: "https://slack.com/api".into(), client })
     }
 
-    pub async fn conversations_info(&self, channel_id: &str) -> Result<ConversationsInfoResponse> {
+    pub async fn conversations_info(
+        &self,
+        query: &ConversationInfoQuery,
+    ) -> Result<ConversationsInfoResponse> {
         Ok(self
             .request::<ConversationsInfoResponse>(&format!(
-                "/conversations.info?channel={channel_id}"
+                "/conversations.info?{}",
+                to_string(query)?,
             ))
             .await?)
     }
 
     pub async fn conversations_history(
         &self,
-        channel_id: &str,
-        latest: f64,
-        oldest: f64,
-        limit: u64,
+        query: &ConversationHistoryQuery,
     ) -> Result<Option<Vec<Message>>> {
         Ok(self
             .request::<ConversationsResponse>(&format!(
-                "/conversations.history?channel={channel_id}&limit={limit}&latest={latest}&oldest={oldest}&inclusive=true"
+                "/conversations.history?{}",
+                to_string(query)?,
             ))
             .await?
             .messages)
@@ -44,16 +71,12 @@ impl Client {
 
     pub async fn conversations_replies(
         &self,
-        channel_id: &str,
-        ts: f64,
-        latest: f64,
-        oldest: f64,
-        limit: u64,
+        query: &ConversationRepliesQuery,
     ) -> Result<Option<Vec<Message>>> {
-        println!("channel_id: {}, ts: {}, latest: {}, oldest: {}, limit: {}", channel_id, ts, latest, oldest, limit);
         Ok(self
             .request::<ConversationsResponse>(&format!(
-                "/conversations.replies?channel={channel_id}&ts={ts}&limit={limit}&latest={latest}&oldest={oldest}&inclusive=true"
+                "/conversations.replies?{}",
+                to_string(query)?,
             ))
             .await?
             .messages)
@@ -97,7 +120,7 @@ pub struct ConversationsResponse {
     pub messages: Option<Vec<Message>>,
 }
 
-#[derive(Deserialize, Debug )]
+#[derive(Deserialize, Debug)]
 pub struct Message {
     pub ts: String,
     pub user: Option<String>,
