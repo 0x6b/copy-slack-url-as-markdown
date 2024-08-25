@@ -8,30 +8,6 @@ pub struct Client {
     client: reqwest::Client,
 }
 
-#[derive(Serialize)]
-pub struct ConversationInfoQuery {
-    pub channel: String,
-}
-
-#[derive(Serialize)]
-pub struct ConversationHistoryQuery {
-    pub channel: String,
-    pub latest: f64,
-    pub oldest: f64,
-    pub limit: u64,
-    pub inclusive: bool,
-}
-
-#[derive(Serialize)]
-pub struct ConversationRepliesQuery {
-    pub channel: String,
-    pub ts: f64,
-    pub latest: f64,
-    pub oldest: f64,
-    pub limit: u64,
-    pub inclusive: bool,
-}
-
 impl Client {
     /// Create a new Slack API client.
     pub fn new(token: &str) -> Result<Self> {
@@ -44,26 +20,20 @@ impl Client {
         Ok(Self { endpoint: "https://slack.com/api".into(), client })
     }
 
-    pub async fn conversations_info(
-        &self,
-        query: &ConversationInfoQuery,
-    ) -> Result<ConversationsInfoResponse> {
+    pub async fn conversations_info(&self, query: &InfoQuery) -> Result<InfoResponse> {
         Ok(self
-            .request::<ConversationsInfoResponse>(&format!(
-                "/conversations.info?{}",
-                to_string(query)?,
-            ))
+            .request::<InfoResponse>(&format!("/conversations.info?{}", to_string(query)?))
             .await?)
     }
 
     pub async fn conversations_history(
         &self,
-        query: &ConversationHistoryQuery,
+        query: &HistoryQuery,
     ) -> Result<Option<Vec<Message>>> {
         Ok(self
             .request::<ConversationsResponse>(&format!(
                 "/conversations.history?{}",
-                to_string(query)?,
+                to_string(query)?
             ))
             .await?
             .messages)
@@ -71,12 +41,12 @@ impl Client {
 
     pub async fn conversations_replies(
         &self,
-        query: &ConversationRepliesQuery,
+        query: &RepliesQuery,
     ) -> Result<Option<Vec<Message>>> {
         Ok(self
             .request::<ConversationsResponse>(&format!(
                 "/conversations.replies?{}",
-                to_string(query)?,
+                to_string(query)?
             ))
             .await?
             .messages)
@@ -99,8 +69,13 @@ impl Client {
     }
 }
 
+#[derive(Serialize)]
+pub struct InfoQuery {
+    pub channel: String,
+}
+
 #[derive(Deserialize)]
-pub struct ConversationsInfoResponse {
+pub struct InfoResponse {
     pub ok: bool,
     pub channel: Channel,
 }
@@ -112,6 +87,25 @@ pub struct Channel {
     pub is_channel: bool,
     pub is_group: bool,
     pub is_im: bool,
+}
+
+#[derive(Serialize)]
+pub struct HistoryQuery {
+    pub channel: String,
+    pub latest: f64,
+    pub oldest: f64,
+    pub limit: u64,
+    pub inclusive: bool,
+}
+
+#[derive(Serialize)]
+pub struct RepliesQuery {
+    pub channel: String,
+    pub ts: f64,
+    pub latest: f64,
+    pub oldest: f64,
+    pub limit: u64,
+    pub inclusive: bool,
 }
 
 #[derive(Deserialize)]
