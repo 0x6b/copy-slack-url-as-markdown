@@ -8,13 +8,14 @@ mod args;
 mod message;
 mod slack_client;
 
-fn main() -> Result<()> {
+#[tokio::main]
+async fn main() -> Result<()> {
     let Args { token, quote, prefix, style } = Args::parse();
     let mut clipboard = Clipboard::new().expect("failed to access system clipboard");
     let content = clipboard.get_text()?;
 
     let message = SlackMessage::try_from(content.as_str())?;
-    let message = message.resolve(&token)?;
+    let message = message.resolve(&token).await?;
 
     let title = format!("{}{}", prefix, message.channel_name);
     let url = &message.url;
