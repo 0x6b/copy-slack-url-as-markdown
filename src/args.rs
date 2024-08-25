@@ -7,7 +7,8 @@ pub struct Args {
     #[arg(long, env = "SLACK_TOKEN")]
     pub token: String,
 
-    /// Timezone to use i.e. UTC. Defaults to Asia/Tokyo.
+    /// The IANA time zone database identifiers to use for the timestamp. Timestamp will be shown
+    /// only if the `quote` option is enabled.
     #[arg(short, long, default_value = "Asia/Tokyo")]
     pub timezone: String,
 
@@ -15,11 +16,12 @@ pub struct Args {
     #[clap(short, long)]
     pub quote: bool,
 
-    /// Prefix to the title.
+    /// Prefix to the link title.
     #[clap(long, default_value = "Slack#")]
     pub prefix: String,
 
-    /// Style of the quoted message in rich text.
+    /// CSS style to apply to the quote. This is a string that will be applied to the blockquote
+    /// element. Obviously, this is only effective for rich text.
     #[clap(long, default_value = "color: rgb(96, 96, 96);")]
     pub style: String,
 }
