@@ -6,7 +6,7 @@ use url::Url;
 
 use crate::{
     slack_client,
-    slack_client::{ConversationHistoryQuery, ConversationInfoQuery, ConversationRepliesQuery},
+    slack_client::{HistoryQuery, InfoQuery, RepliesQuery},
 };
 
 #[derive(Deserialize, Debug, Clone, Copy)]
@@ -68,12 +68,12 @@ impl SlackMessage<Initialized<'_>> {
     pub async fn resolve(&self, token: &str) -> Result<SlackMessage<Resolved>> {
         let client = slack_client::Client::new(token)?;
         let channel_name = client
-            .conversations_info(&ConversationInfoQuery { channel: self.channel_id.clone() })
+            .conversations_info(&InfoQuery { channel: self.channel_id.clone() })
             .await?
             .channel
             .name_normalized;
         let history = client
-            .conversations_history(&ConversationHistoryQuery {
+            .conversations_history(&HistoryQuery {
                 channel: self.channel_id.clone(),
                 latest: self.ts,
                 oldest: self.ts,
@@ -90,7 +90,7 @@ impl SlackMessage<Initialized<'_>> {
 
         if body.join("").is_empty() {
             let replies = client
-                .conversations_replies(&ConversationRepliesQuery {
+                .conversations_replies(&RepliesQuery {
                     channel: self.channel_id.clone(),
                     ts: self.thread_ts.unwrap_or(self.ts),
                     latest: self.ts,
