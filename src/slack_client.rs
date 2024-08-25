@@ -1,7 +1,6 @@
 use anyhow::Result;
 use reqwest::header::{HeaderMap, HeaderValue, AUTHORIZATION, CONTENT_TYPE};
 use serde::{de::DeserializeOwned, Deserialize};
-use serde_json::Value;
 
 pub struct Client {
     endpoint: String,
@@ -34,10 +33,27 @@ impl Client {
         latest: f64,
         oldest: f64,
         limit: u64,
-    ) -> Result<Vec<Message>> {
+    ) -> Result<Option<Vec<Message>>> {
         Ok(self
-            .request::<ConversationsHistoryResponse>(&format!(
+            .request::<ConversationsResponse>(&format!(
                 "/conversations.history?channel={channel_id}&limit={limit}&latest={latest}&oldest={oldest}&inclusive=true"
+            ))
+            .await?
+            .messages)
+    }
+
+    pub async fn conversations_replies(
+        &self,
+        channel_id: &str,
+        ts: f64,
+        latest: f64,
+        oldest: f64,
+        limit: u64,
+    ) -> Result<Option<Vec<Message>>> {
+        println!("channel_id: {}, ts: {}, latest: {}, oldest: {}, limit: {}", channel_id, ts, latest, oldest, limit);
+        Ok(self
+            .request::<ConversationsResponse>(&format!(
+                "/conversations.replies?channel={channel_id}&ts={ts}&limit={limit}&latest={latest}&oldest={oldest}&inclusive=true"
             ))
             .await?
             .messages)
@@ -76,41 +92,14 @@ pub struct Channel {
 }
 
 #[derive(Deserialize)]
-pub struct ConversationsHistoryResponse {
+pub struct ConversationsResponse {
     pub ok: bool,
-    pub messages: Vec<Message>,
+    pub messages: Option<Vec<Message>>,
 }
 
 #[derive(Deserialize, Debug )]
 pub struct Message {
-    #[serde(rename = "type")]
-    pub ty: String,
-    pub subtype: Option<String>,
     pub ts: String,
     pub user: Option<String>,
     pub text: Option<String>,
-    pub blocks: Option<Value>,
-}
-
-#[cfg(test)]
-mod test {
-    #[tokio::test]
-    async fn test_conversations_info() {
-        let client = super::Client::new(env!("SLACK_TOKEN")).unwrap();
-        let response = client.conversations_info("C02HVJKFGD8").await.unwrap();
-        assert_eq!(response.ok, true);
-        assert_eq!(response.channel.id, "C02HVJKFGD8");
-        assert_eq!(response.channel.name_normalized, "_kaoru-scratchpad");
-        assert_eq!(response.channel.is_channel, true);
-        assert_eq!(response.channel.is_group, false);
-        assert_eq!(response.channel.is_im, false);
-    }
-
-    #[tokio::test]
-    async fn test_conversations_history() {
-        let client = super::Client::new(env!("SLACK_TOKEN")).unwrap();
-        let response = client.conversations_history("C02HVJKFGD8", 1698198288.730779, 1698198288.730779, 1).await.unwrap();
-        println!("{:?}", response);
-        assert_eq!(response.len(), 1);
-    }
 }
