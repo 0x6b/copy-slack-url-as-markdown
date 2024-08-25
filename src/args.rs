@@ -7,9 +7,9 @@ pub struct Args {
     #[arg(long, env = "SLACK_TOKEN")]
     pub token: String,
 
-    /// Timezone to use i.e. Asia/Tokyo. Defaults to UTC.
-    #[arg(short, long)]
-    pub timezone: Option<String>,
+    /// Timezone to use i.e. UTC. Defaults to Asia/Tokyo.
+    #[arg(short, long, default_value = "Asia/Tokyo")]
+    pub timezone: String,
 
     /// Include the message body as a quote, with timestamp
     #[clap(short, long)]
