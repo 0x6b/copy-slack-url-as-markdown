@@ -20,10 +20,11 @@ impl Client {
         Ok(Self { endpoint: "https://slack.com/api".into(), client })
     }
 
-    pub async fn conversations_info(&self, query: &InfoQuery) -> Result<InfoResponse> {
+    pub async fn conversations_info(&self, query: &InfoQuery) -> Result<Channel> {
         Ok(self
             .request::<InfoQuery, InfoResponse>("conversations.info", query)
-            .await?)
+            .await?
+            .channel)
     }
 
     pub async fn conversations_history(

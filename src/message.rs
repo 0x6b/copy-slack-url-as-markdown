@@ -70,7 +70,6 @@ impl SlackMessage<Initialized<'_>> {
         let channel_name = client
             .conversations_info(&InfoQuery { channel: self.channel_id.clone() })
             .await?
-            .channel
             .name_normalized;
         let history = client
             .conversations_history(&HistoryQuery {
