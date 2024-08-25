@@ -31,3 +31,6 @@ reqwest = { version = "0.12.7", default-features = false, features = ["json", "r
 
 # Async runtime
 tokio = { version = "1.39.3", features = ["rt", "macros", "net", "rt-multi-thread"] }
+
+# Date and time
+jiff = "0.1.10"

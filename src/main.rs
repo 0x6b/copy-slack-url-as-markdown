@@ -1,6 +1,7 @@
 use anyhow::Result;
 use arboard::Clipboard;
 use clap::Parser;
+use jiff::Timestamp;
 
 use crate::{args::Args, message::SlackMessage};
 
@@ -10,7 +11,8 @@ mod slack_client;
 
 #[tokio::main]
 async fn main() -> Result<()> {
-    let Args { token, quote, prefix, style } = Args::parse();
+    let Args { token, timezone, quote, prefix, style } = Args::parse();
+
     let mut clipboard = Clipboard::new().expect("failed to access system clipboard");
     let content = clipboard.get_text()?;
 
@@ -21,9 +23,15 @@ async fn main() -> Result<()> {
     let url = &message.url;
     let (text, html) = if quote {
         let body = &message.body;
+        let time = Timestamp::from_microsecond(message.ts)?;
+        let time = match timezone {
+            Some(tz) => time.intz(&tz)?,
+            None => time.intz("UTC")?,
+        };
         (
             format!(
-                "\n\n{}",
+                " at {}\n\n{}",
+                time.strftime("%Y-%m-%d %H:%M:%S (%Z)"),
                 body.lines().map(|l| format!("> {l}")).collect::<Vec<_>>().join("\n")
             ),
             format!(r#"<blockquote style="{style}">{body}</blockquote>"#),
