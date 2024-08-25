@@ -72,17 +72,12 @@ pub struct InfoQuery {
 
 #[derive(Deserialize)]
 pub struct InfoResponse {
-    pub ok: bool,
     pub channel: Channel,
 }
 
 #[derive(Deserialize)]
 pub struct Channel {
-    pub id: String,
     pub name_normalized: String,
-    pub is_channel: bool,
-    pub is_group: bool,
-    pub is_im: bool,
 }
 
 #[derive(Serialize)]
@@ -106,13 +101,10 @@ pub struct RepliesQuery {
 
 #[derive(Deserialize)]
 pub struct ConversationsResponse {
-    pub ok: bool,
     pub messages: Option<Vec<Message>>,
 }
 
 #[derive(Deserialize, Debug)]
 pub struct Message {
-    pub ts: String,
-    pub user: Option<String>,
     pub text: Option<String>,
 }
