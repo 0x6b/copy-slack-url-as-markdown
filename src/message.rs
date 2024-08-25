@@ -1,9 +1,13 @@
-use std::{borrow::Cow, num::ParseFloatError, ops::Deref};
+use std::{num::ParseFloatError, ops::Deref};
 
 use anyhow::{anyhow, bail, Error, Result};
 use serde::Deserialize;
-use slack_api::sync as slack;
 use url::Url;
+
+use crate::{
+    slack_client,
+    slack_client::{HistoryQuery, InfoQuery, RepliesQuery},
+};
 
 #[derive(Deserialize, Debug, Clone, Copy)]
 struct QueryParams {
@@ -61,61 +65,43 @@ impl<'a> TryFrom<&'a str> for SlackMessage<Initialized<'a>> {
 }
 
 impl SlackMessage<Initialized<'_>> {
-    pub fn resolve(&self, token: &str) -> Result<SlackMessage<Resolved>> {
-        let client = slack::default_client()?;
-        let channel = Cow::from(&self.channel_id);
-
-        let channel_name = slack::conversations::info(
-            &client,
-            token,
-            &slack::conversations::InfoRequest {
-                channel: channel.clone(),
-                include_locale: Some(false),
-                include_num_members: Some(false),
-            },
-        )?
-        .channel
-        .name_normalized;
-
-        let history = slack::conversations::history(
-            &client,
-            token,
-            &slack_api::conversations::HistoryRequest {
-                channel: channel.clone(),
-                latest: Some(self.ts),
-                oldest: Some(self.ts),
-                inclusive: Some(true),
-                limit: Some(1),
-                cursor: None,
-            },
-        )?;
-
-        let mut body = match history.messages {
-            Some(messages) => messages.into_iter().map(|m| m.text).collect::<Vec<String>>(),
+    pub async fn resolve(&self, token: &str) -> Result<SlackMessage<Resolved>> {
+        let client = slack_client::Client::new(token)?;
+        let channel_name = client
+            .conversations_info(&InfoQuery { channel: self.channel_id.clone() })
+            .await?
+            .name_normalized;
+        let history = client
+            .conversations_history(&HistoryQuery {
+                channel: self.channel_id.clone(),
+                latest: self.ts,
+                oldest: self.ts,
+                limit: 1,
+                inclusive: true,
+            })
+            .await?;
+        let mut body = match history {
+            Some(messages) => messages.into_iter().filter_map(|m| m.text).collect::<Vec<String>>(),
             None => {
                 bail!("No messages found")
             }
         };
 
-        // If the message didn't send to the main channel, the response of the conversation.history
-        // will be blank. I'm not sure why. Try to fetch using conversation.replies
         if body.join("").is_empty() {
-            let replies = slack::conversations::replies(
-                &client,
-                Some(token),
-                &slack_api::conversations::RepliesRequest {
-                    channel: Some(channel),
-                    latest: Some(self.ts),
-                    oldest: Some(self.ts),
-                    inclusive: Some(true),
-                    limit: Some(1),
-                    cursor: None,
-                    ts: Some(self.thread_ts.unwrap_or(self.ts)),
-                },
-            )?;
-
-            body = match replies.messages {
-                Some(replies) => replies.into_iter().map(|m| m.text).collect::<Vec<String>>(),
+            let replies = client
+                .conversations_replies(&RepliesQuery {
+                    channel: self.channel_id.clone(),
+                    ts: self.thread_ts.unwrap_or(self.ts),
+                    latest: self.ts,
+                    oldest: self.ts,
+                    limit: 1,
+                    inclusive: true,
+                })
+                .await?;
+            body = match replies {
+                Some(replies) => {
+                    replies.into_iter().filter_map(|m| m.text).collect::<Vec<String>>()
+                }
                 None => bail!("No messages found"),
             }
         }
