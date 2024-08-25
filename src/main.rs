@@ -23,18 +23,17 @@ async fn main() -> Result<()> {
     let url = &message.url;
     let (text, html) = if quote {
         let body = &message.body;
-        let time = Timestamp::from_microsecond(message.ts)?;
-        let time = match timezone {
-            Some(tz) => time.intz(&tz)?,
-            None => time.intz("UTC")?,
-        };
+        let time = Timestamp::from_microsecond(message.ts)?.intz(&timezone)?;
         (
             format!(
                 " at {}\n\n{}",
                 time.strftime("%Y-%m-%d %H:%M:%S (%Z)"),
                 body.lines().map(|l| format!("> {l}")).collect::<Vec<_>>().join("\n")
             ),
-            format!(r#"<blockquote style="{style}">{body}</blockquote>"#),
+            format!(
+                r#" at {}<blockquote style="{style}">{body}</blockquote>"#,
+                time.strftime("%Y-%m-%d %H:%M:%S (%Z)")
+            ),
         )
     } else {
         ("".to_string(), "".to_string())
