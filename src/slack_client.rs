@@ -22,7 +22,7 @@ impl Client {
 
     pub async fn conversations_info(&self, query: &InfoQuery) -> Result<InfoResponse> {
         Ok(self
-            .request::<InfoResponse>(&format!("/conversations.info?{}", to_string(query)?))
+            .request::<InfoQuery, InfoResponse>("conversations.info", query)
             .await?)
     }
 
@@ -31,10 +31,7 @@ impl Client {
         query: &HistoryQuery,
     ) -> Result<Option<Vec<Message>>> {
         Ok(self
-            .request::<ConversationsResponse>(&format!(
-                "/conversations.history?{}",
-                to_string(query)?
-            ))
+            .request::<HistoryQuery, ConversationsResponse>("conversations.history", query)
             .await?
             .messages)
     }
@@ -44,25 +41,23 @@ impl Client {
         query: &RepliesQuery,
     ) -> Result<Option<Vec<Message>>> {
         Ok(self
-            .request::<ConversationsResponse>(&format!(
-                "/conversations.replies?{}",
-                to_string(query)?
-            ))
+            .request::<RepliesQuery, ConversationsResponse>("conversations.replies", query)
             .await?
             .messages)
     }
 
     // Helper method to make a request and deserialize the response into `T`
-    async fn request<T>(&self, url: &str) -> Result<T>
+    async fn request<T, U>(&self, path: &str, query: &T) -> Result<U>
     where
-        T: DeserializeOwned,
+        T: Serialize,
+        U: DeserializeOwned,
     {
         let response = self
             .client
-            .get(&format!("{}{}", self.endpoint, url))
+            .get(&format!("{}/{}?{}", self.endpoint, path, to_string(query)?))
             .send()
             .await?
-            .json::<T>()
+            .json::<U>()
             .await?;
 
         Ok(response)
