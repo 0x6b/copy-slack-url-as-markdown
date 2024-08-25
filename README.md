@@ -6,16 +6,12 @@ Convert a Slack URL in the clipboard to Markdown format, then copy back to the c
 
 Expose your Slack user token as `SLACK_TOKEN` environment variable to use the utilities, or pass the token as an argument. Please refer to the [Slack documentation](https://api.slack.com/concepts/token-types) to see how to get the token.
 
-Following permission scopes would be required.
+Following permission scopes would be required. The required scopes depend on the type of channel-like object you're working with. You only need the scopes corresponding to that conversation type, found below.
 
-- [`channels:history`](https://api.slack.com/scopes/channels:history)
-- [`groups:history`](https://api.slack.com/scopes/groups:history)
-- [`im:history`](https://api.slack.com/scopes/im:history)
-- [`mpim:history`](https://api.slack.com/scopes/mpim:history)
-- [`channels:read`](https://api.slack.com/scopes/channels:read)
-- [`groups:read`](https://api.slack.com/scopes/groups:read)
-- [`im:read`](https://api.slack.com/scopes/im:read)
-- [`mpim:read`](https://api.slack.com/scopes/mpim:read)
+- Public channels: [`channels:history`](https://api.slack.com/scopes/channels:history) and  [`channels:read`](https://api.slack.com/scopes/channels:read)
+- Private channels: [`groups:history`](https://api.slack.com/scopes/groups:history) and  [`groups:read`](https://api.slack.com/scopes/groups:read)
+- Direct messages: [`im:history`](https://api.slack.com/scopes/im:history) and  [`im:read`](https://api.slack.com/scopes/im:read)
+- Group direct messages: [`mpim:history`](https://api.slack.com/scopes/mpim:history) and  [`mpim:read`](https://api.slack.com/scopes/mpim:read)
 
 ## Usage
 
