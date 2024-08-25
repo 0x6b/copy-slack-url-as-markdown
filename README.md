@@ -19,16 +19,18 @@ Following permission scopes would be required. The required scopes depend on the
 $ s2m --help
 Copy Slack URL as Markdown
 
-Usage: copy-slack-url-as-markdown [OPTIONS] --token <TOKEN>
+Usage: s2m [OPTIONS] --token <TOKEN>
 
 Options:
-  -t, --token <TOKEN>    Slack API token [env: SLACK_TOKEN=xoxp-...]
-  -q, --quote            Include the message body as a quote
-      --prefix <PREFIX>  Prefix to the title [default: Slack#]
-      --style <STYLE>    Style of the quoted message in rich text [default:
-                         "color: rgb(96, 96, 96);"]
-  -h, --help             Print help
-  -V, --version          Print version
+      --token <TOKEN>        Slack API token [env: SLACK_TOKEN=xoxp-...]
+  -t, --timezone <TIMEZONE>  Timezone to use i.e. UTC. Defaults to Asia/Tokyo [default:
+                             Asia/Tokyo]
+  -q, --quote                Include the message body as a quote, with timestamp
+      --prefix <PREFIX>      Prefix to the title [default: Slack#]
+      --style <STYLE>        Style of the quoted message in rich text [default: "color: rgb(96,
+                             96, 96);"]
+  -h, --help                 Print help
+  -V, --version              Print version
 ```
 
 ## License
