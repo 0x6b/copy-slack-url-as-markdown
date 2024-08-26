@@ -27,8 +27,7 @@ Options:
   -q, --quote
           Include the message body as a quote
   -t, --timezone <TIMEZONE>
-          The IANA time zone database identifiers to use for the timestamp. Timestamp will be
-          shown only if the `quote` option is enabled [default: Asia/Tokyo]
+          The IANA time zone database identifiers to use for the timestamp [default: Asia/Tokyo]
       --template-text <TEMPLATE_TEXT>                        
           Path to the template file for plain text, without quote [env: TEMPLATE_TEXT=]
       --template-text-quote <TEMPLATE_TEXT_QUOTE>            
