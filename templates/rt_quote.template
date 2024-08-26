@@ -1,0 +1,4 @@
+<p><a href="{{ url }}">Slack#{{ channel_name }}</a>&nbsp;at&nbsp;{{ timestamp }}</p>
+<blockquote style="color: rgb(96, 96, 96);">
+{% for line in text %}<p>{{ line | trim | escape }}</p>{% endfor %}
+</blockquote>
