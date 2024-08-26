@@ -22,16 +22,44 @@ Copy Slack URL as Markdown
 Usage: s2m [OPTIONS] --token <TOKEN>
 
 Options:
-      --token <TOKEN>        Slack API token [env: SLACK_TOKEN=xoxp-...]
-  -t, --timezone <TIMEZONE>  Timezone to use i.e. UTC. Defaults to Asia/Tokyo [default:
-                             Asia/Tokyo]
-  -q, --quote                Include the message body as a quote, with timestamp
-      --prefix <PREFIX>      Prefix to the title [default: Slack#]
-      --style <STYLE>        Style of the quoted message in rich text [default: "color: rgb(96,
-                             96, 96);"]
-  -h, --help                 Print help
-  -V, --version              Print version
+      --token <TOKEN>
+          Slack API token [env: SLACK_TOKEN=xoxp-...]
+  -q, --quote
+          Include the message body as a quote
+  -t, --timezone <TIMEZONE>
+          The IANA time zone database identifiers to use for the timestamp. Timestamp will be
+          shown only if the `quote` option is enabled [default: Asia/Tokyo]
+      --template-text <TEMPLATE_TEXT>                        
+          Path to the template file for plain text, without quote [env: TEMPLATE_TEXT=]
+      --template-text-quote <TEMPLATE_TEXT_QUOTE>            
+          Path to the template file for plain text, with quote [env: TEMPLATE_TEXT_QUOTE=]
+      --template-rich-text <TEMPLATE_RICH_TEXT>              
+          Path to the template file for rich text, without quote [env: TEMPLATE_RICH_TEXT=]
+      --template-rich-text-quote <TEMPLATE_RICH_TEXT_QUOTE>  
+          Path to the template file for rich text, with quote [env: TEMPLATE_RICH_TEXT_QUOTE=]
+  -h, --help
+          Print help
+  -V, --version
+          Print version
 ```
+
+### Templates
+
+You can customize the output format by providing a template file via the `--template-*` options, or respective environment variables. The template file is a plain text file that contains the format of the output message. Under the hood, this program uses the [tera](https://tera.netlify.app/) template engine, allowing you to take full advantage of its capabilities.
+
+- `--template-text`: The template file for plain text, without quote.
+- `--template-text-quote`: The template file for plain text, with quote.
+- `--template-rich-text`: The template file for rich text (basically an HTML), without quote.
+- `--template-rich-text-quote`: The template file for rich text, with quote.
+
+The pre-defined variables below:
+
+- `{{ channel_name }}`: The name of the channel the message belongs to.
+- `{{ url }}`: The Slack URL of the message.
+- `{{ timestamp }}`: The timestamp of the message.
+- `{{ text }}`: The text of the message, which is the vector of the texts split by the new line.
+
+See [`templates`](templates) for the default templates.
 
 ## License
 
@@ -42,6 +70,7 @@ MIT. See [LICENSE](LICENSE) for details.
 - [Web API methods | Slack](https://api.slack.com/methods)
 - [Token types | Slack](https://api.slack.com/concepts/token-types)
 - [Permission scopes | Slack](https://api.slack.com/scopes)
+- [Tera](https://keats.github.io/tera/)
 
 ## Privacy
 

@@ -22,8 +22,8 @@ const TEMPLATE_RICH_TEXT_QUOTE: &str = include_str!("../templates/rich_text_quot
 async fn main() -> Result<()> {
     let Args {
         token,
-        timezone,
         quote,
+        timezone,
         template_text,
         template_text_quote,
         template_rich_text,
