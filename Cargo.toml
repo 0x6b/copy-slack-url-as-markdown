@@ -34,3 +34,6 @@ tokio = { version = "1.39.3", features = ["rt", "macros", "net", "rt-multi-threa
 
 # Date and time
 jiff = "0.1.10"
+
+# Templating
+tera = "1.20.0"

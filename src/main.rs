@@ -1,7 +1,8 @@
-use anyhow::Result;
+use anyhow::{bail, Result};
 use arboard::Clipboard;
 use clap::Parser;
 use jiff::Timestamp;
+use tera::{Context, Tera};
 
 use crate::{args::Args, message::SlackMessage};
 
@@ -11,7 +12,7 @@ mod slack_client;
 
 #[tokio::main]
 async fn main() -> Result<()> {
-    let Args { token, timezone, quote, prefix, style } = Args::parse();
+    let Args { token, timezone, quote } = Args::parse();
 
     let mut clipboard = Clipboard::new().expect("failed to access system clipboard");
     let content = clipboard.get_text()?;
@@ -19,31 +20,39 @@ async fn main() -> Result<()> {
     let message = SlackMessage::try_from(content.as_str())?;
     let message = message.resolve(&token).await?;
 
-    let title = format!("{}{}", prefix, message.channel_name);
-    let url = &message.url;
-    let (text, html) = if quote {
-        let body = &message.body;
-        let time = Timestamp::from_microsecond(message.ts)?.intz(&timezone)?;
-        (
-            format!(
-                " at {}\n\n{}",
-                time.strftime("%Y-%m-%d %H:%M:%S (%Z)"),
-                body.lines().map(|l| format!("> {l}")).collect::<Vec<_>>().join("\n")
-            ),
-            format!(
-                r#" at {}<blockquote style="{style}">{body}</blockquote>"#,
-                time.strftime("%Y-%m-%d %H:%M:%S (%Z)")
-            ),
-        )
-    } else {
-        ("".to_string(), "".to_string())
+    let tera = match Tera::new("templates/**/*") {
+        Ok(t) => t,
+        Err(e) => bail!("Parsing error(s): {}", e),
     };
 
-    let text = format!("[{title}]({url}){text}");
-    let html = format!(r#"<a href="{url}">{title}</a>{html}"#);
+    let mut context = Context::new();
+    context.insert("url", &message.url);
+    context.insert("channel_name", &message.channel_name);
+    context.insert(
+        "text",
+        &message
+            .body
+            .trim()
+            .replace("```", "\n```\n")
+            .lines()
+            // .filter(|l| !l.is_empty())
+            .collect::<Vec<_>>(),
+    );
+    let time = Timestamp::from_microsecond(message.ts)?.intz(&timezone)?;
+    context.insert("timestamp", &time.strftime("%Y-%m-%d %H:%M:%S (%Z)").to_string());
 
-    match clipboard.set_html(html.trim(), Some(text.trim())) {
-        Ok(_) => println!("{text}"),
+    let (rt, md) = if quote {
+        let rt = tera.render("rt_quote.template", &context)?;
+        let md = tera.render("md_quote.template", &context)?;
+        (rt, md)
+    } else {
+        let rt = tera.render("rt.template", &context)?;
+        let md = tera.render("md.template", &context)?;
+        (rt, md)
+    };
+
+    match clipboard.set_html(rt.trim(), Some(md.trim())) {
+        Ok(_) => println!("{md}"),
         Err(why) => println!("{why}"),
     }
 
