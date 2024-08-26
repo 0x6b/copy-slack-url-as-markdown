@@ -7,7 +7,10 @@ use jiff::Timestamp;
 use tera::{Context, Tera};
 use tokio::fs::read_to_string;
 
-use crate::{args::Args, message::SlackMessage};
+use crate::{
+    args::Args,
+    message::{Resolved, SlackMessage},
+};
 
 mod args;
 mod message;
@@ -38,26 +41,11 @@ async fn main() -> Result<()> {
     )
     .await?;
 
-    let mut clipboard = Clipboard::new().expect("failed to access system clipboard");
+    let mut clipboard = Clipboard::new()?;
     let content = clipboard.get_text()?;
-
     let message = SlackMessage::try_from(content.as_str())?;
     let message = message.resolve(&token).await?;
-
-    let mut context = Context::new();
-    context.insert("url", &message.url);
-    context.insert("channel_name", &message.channel_name);
-    context.insert(
-        "text",
-        &message
-            .body
-            .trim()
-            .replace("```", "\n```\n")
-            .lines()
-            .collect::<Vec<_>>(),
-    );
-    let time = Timestamp::from_microsecond(message.ts)?.intz(&timezone)?;
-    context.insert("timestamp", &time.strftime("%Y-%m-%d %H:%M:%S (%Z)").to_string());
+    let context = setup_context(&message, &timezone)?;
 
     let (rich_text, text) = if quote {
         (tera.render("rich_text_quote", &context)?, tera.render("text_quote", &context)?)
@@ -104,4 +92,29 @@ async fn setup_tera(
     tera.add_raw_template("rich_text_quote", template_rich_text_quote)?;
 
     Ok(tera)
+}
+
+fn setup_context(message: &SlackMessage<Resolved>, timezone: &str) -> Result<Context> {
+    let mut context = Context::new();
+
+    context.insert("channel_name", &message.channel_name);
+    context.insert("url", &message.url);
+    context.insert(
+        "timestamp",
+        &Timestamp::from_microsecond(message.ts)?
+            .intz(timezone)?
+            .strftime("%Y-%m-%d %H:%M:%S (%Z)")
+            .to_string(),
+    );
+    context.insert(
+        "text",
+        &message
+            .body
+            .trim()
+            .replace("```", "\n```\n")
+            .lines()
+            .collect::<Vec<_>>(),
+    );
+
+    Ok(context)
 }
