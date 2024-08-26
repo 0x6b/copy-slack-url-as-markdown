@@ -1,3 +1,5 @@
+use std::path::PathBuf;
+
 use clap::Parser;
 
 #[derive(Parser)]
@@ -15,6 +17,20 @@ pub struct Args {
     /// Include the message body as a quote
     #[arg(short, long)]
     pub quote: bool,
-    
-    /// Path to the template file for 
+
+    /// Path to the template file for plain text, without quote
+    #[arg(long)]
+    pub template_text: Option<PathBuf>,
+
+    /// Path to the template file for plain text, with quote
+    #[arg(long)]
+    pub template_text_quote: Option<PathBuf>,
+
+    /// Path to the template file for rich text, without quote
+    #[arg(long)]
+    pub template_rich_text: Option<PathBuf>,
+
+    /// Path to the template file for rich text, with quote
+    #[arg(long)]
+    pub template_rich_text_quote: Option<PathBuf>,
 }
