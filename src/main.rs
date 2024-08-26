@@ -35,24 +35,19 @@ async fn main() -> Result<()> {
             .trim()
             .replace("```", "\n```\n")
             .lines()
-            // .filter(|l| !l.is_empty())
             .collect::<Vec<_>>(),
     );
     let time = Timestamp::from_microsecond(message.ts)?.intz(&timezone)?;
     context.insert("timestamp", &time.strftime("%Y-%m-%d %H:%M:%S (%Z)").to_string());
 
-    let (rt, md) = if quote {
-        let rt = tera.render("rt_quote.template", &context)?;
-        let md = tera.render("md_quote.template", &context)?;
-        (rt, md)
+    let (rich_text, text) = if quote {
+        (tera.render("rich_text_quote.template", &context)?, tera.render("text_quote.template", &context)?)
     } else {
-        let rt = tera.render("rt.template", &context)?;
-        let md = tera.render("md.template", &context)?;
-        (rt, md)
+        (tera.render("rich_text.template", &context)?, tera.render("text.template", &context)?)
     };
 
-    match clipboard.set_html(rt.trim(), Some(md.trim())) {
-        Ok(_) => println!("{md}"),
+    match clipboard.set_html(rich_text.trim(), Some(text.trim())) {
+        Ok(_) => println!("{text}"),
         Err(why) => println!("{why}"),
     }
 
