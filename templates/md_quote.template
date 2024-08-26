@@ -1,0 +1,4 @@
+[Slack#{{ channel_name }}]({{ url }}) at {{ timestamp }}
+
+{% for line in text %}> {{ line | trim }}
+{% endfor %}

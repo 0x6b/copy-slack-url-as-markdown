@@ -12,16 +12,7 @@ pub struct Args {
     #[arg(short, long, default_value = "Asia/Tokyo")]
     pub timezone: String,
 
-    /// Include the message body as a quote, with timestamp
+    /// Include the message body as a quote
     #[clap(short, long)]
     pub quote: bool,
-
-    /// Prefix to the link title.
-    #[clap(long, default_value = "Slack#")]
-    pub prefix: String,
-
-    /// CSS style to apply to the quote. This is a string that will be applied to the blockquote
-    /// element. Obviously, this is only effective for rich text.
-    #[clap(long, default_value = "color: rgb(96, 96, 96);")]
-    pub style: String,
 }
