@@ -1,8 +1,11 @@
-use anyhow::{bail, Result};
+use std::path::PathBuf;
+
+use anyhow::Result;
 use arboard::Clipboard;
 use clap::Parser;
 use jiff::Timestamp;
 use tera::{Context, Tera};
+use tokio::fs::read_to_string;
 
 use crate::{args::Args, message::SlackMessage};
 
@@ -10,20 +13,36 @@ mod args;
 mod message;
 mod slack_client;
 
+const TEMPLATE_TEXT: &str = include_str!("../templates/text");
+const TEMPLATE_TEXT_QUOTE: &str = include_str!("../templates/text_quote");
+const TEMPLATE_RICH_TEXT: &str = include_str!("../templates/rich_text");
+const TEMPLATE_RICH_TEXT_QUOTE: &str = include_str!("../templates/rich_text_quote");
+
 #[tokio::main]
 async fn main() -> Result<()> {
-    let Args { token, timezone, quote } = Args::parse();
+    let Args {
+        token,
+        timezone,
+        quote,
+        template_text,
+        template_text_quote,
+        template_rich_text,
+        template_rich_text_quote,
+    } = Args::parse();
+
+    let tera = setup_tera(
+        template_text,
+        template_text_quote,
+        template_rich_text,
+        template_rich_text_quote,
+    )
+    .await?;
 
     let mut clipboard = Clipboard::new().expect("failed to access system clipboard");
     let content = clipboard.get_text()?;
 
     let message = SlackMessage::try_from(content.as_str())?;
     let message = message.resolve(&token).await?;
-
-    let tera = match Tera::new("templates/**/*") {
-        Ok(t) => t,
-        Err(e) => bail!("Parsing error(s): {}", e),
-    };
 
     let mut context = Context::new();
     context.insert("url", &message.url);
@@ -41,9 +60,9 @@ async fn main() -> Result<()> {
     context.insert("timestamp", &time.strftime("%Y-%m-%d %H:%M:%S (%Z)").to_string());
 
     let (rich_text, text) = if quote {
-        (tera.render("rich_text_quote.template", &context)?, tera.render("text_quote.template", &context)?)
+        (tera.render("rich_text_quote", &context)?, tera.render("text_quote", &context)?)
     } else {
-        (tera.render("rich_text.template", &context)?, tera.render("text.template", &context)?)
+        (tera.render("rich_text", &context)?, tera.render("text", &context)?)
     };
 
     match clipboard.set_html(rich_text.trim(), Some(text.trim())) {
@@ -52,4 +71,37 @@ async fn main() -> Result<()> {
     }
 
     Ok(())
+}
+
+async fn setup_tera(
+    text: Option<PathBuf>,
+    text_quote: Option<PathBuf>,
+    rich_text: Option<PathBuf>,
+    rich_text_quote: Option<PathBuf>,
+) -> Result<Tera> {
+    let mut tera = Tera::default();
+
+    let template_text = match text {
+        Some(path) => &read_to_string(path).await?,
+        None => TEMPLATE_TEXT,
+    };
+    let template_text_quote = match text_quote {
+        Some(path) => &read_to_string(path).await?,
+        None => TEMPLATE_TEXT_QUOTE,
+    };
+    let template_rich_text = match rich_text {
+        Some(path) => &read_to_string(path).await?,
+        None => TEMPLATE_RICH_TEXT,
+    };
+    let template_rich_text_quote = match rich_text_quote {
+        Some(path) => &read_to_string(path).await?,
+        None => TEMPLATE_RICH_TEXT_QUOTE,
+    };
+
+    tera.add_raw_template("text", template_text)?;
+    tera.add_raw_template("text_quote", template_text_quote)?;
+    tera.add_raw_template("rich_text", template_rich_text)?;
+    tera.add_raw_template("rich_text_quote", template_rich_text_quote)?;
+
+    Ok(tera)
 }
