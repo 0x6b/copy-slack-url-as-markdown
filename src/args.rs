@@ -13,6 +13,8 @@ pub struct Args {
     pub timezone: String,
 
     /// Include the message body as a quote
-    #[clap(short, long)]
+    #[arg(short, long)]
     pub quote: bool,
+    
+    /// Path to the template file for 
 }
