@@ -1,16 +1,16 @@
 use std::path::PathBuf;
 
+use crate::{
+    args::Args,
+    message::{Resolved, SlackMessage},
+};
 use anyhow::Result;
 use arboard::Clipboard;
 use clap::Parser;
 use jiff::Timestamp;
 use tera::{Context, Tera};
 use tokio::fs::read_to_string;
-
-use crate::{
-    args::Args,
-    message::{Resolved, SlackMessage},
-};
+use url::Url;
 
 mod args;
 mod message;
@@ -43,7 +43,9 @@ async fn main() -> Result<()> {
 
     let mut clipboard = Clipboard::new()?;
     let content = clipboard.get_text()?;
-    let message = SlackMessage::try_from(content.as_str())?;
+    let url = Url::parse(content.trim())?;
+
+    let message = SlackMessage::try_from(&url)?;
     let message = message.resolve(&token).await?;
     let context = setup_context(&message, &timezone)?;
 
@@ -98,7 +100,7 @@ fn setup_context(message: &SlackMessage<Resolved>, timezone: &str) -> Result<Con
     let mut context = Context::new();
 
     context.insert("channel_name", &message.channel_name);
-    context.insert("url", &message.url);
+    context.insert("url", &message.url.as_str());
     context.insert(
         "timestamp",
         &Timestamp::from_microsecond(message.ts)?
