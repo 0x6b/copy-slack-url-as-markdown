@@ -20,10 +20,12 @@ impl Client {
         Ok(Self { endpoint: "https://slack.com/api".into(), client })
     }
 
+    // https://api.slack.com/methods/conversations.info
     pub async fn conversations_info(&self, query: &InfoQuery<'_>) -> Result<Channel> {
         Ok(self.request::<InfoQuery>(query).await?.channel)
     }
 
+    // https://api.slack.com/methods/conversations.history
     pub async fn conversations_history(
         &self,
         query: &HistoryQuery<'_>,
@@ -31,6 +33,7 @@ impl Client {
         Ok(self.request::<HistoryQuery>(query).await?.messages)
     }
 
+    // https://api.slack.com/methods/conversations.replies
     pub async fn conversations_replies(
         &self,
         query: &RepliesQuery<'_>,

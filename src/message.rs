@@ -89,6 +89,8 @@ impl SlackMessage<Initialized<'_>> {
             }
         };
 
+        // If the message didn't send to the main channel, the response of the conversation.history
+        // will be blank. I'm not sure why. Try to fetch using conversation.replies
         if body.join("").is_empty() {
             let replies = client
                 .conversations_replies(&RepliesQuery {
