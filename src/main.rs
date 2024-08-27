@@ -9,7 +9,7 @@ use tokio::fs::read_to_string;
 use url::Url;
 
 use crate::{
-    args::Args,
+    args::{Args, Templates},
     message::{Resolved, SlackMessage},
 };
 
@@ -24,23 +24,8 @@ const TEMPLATE_RICH_TEXT_QUOTE: &str = include_str!("../templates/rich_text_quot
 
 #[tokio::main]
 async fn main() -> Result<()> {
-    let Args {
-        token,
-        quote,
-        timezone,
-        template_text,
-        template_text_quote,
-        template_rich_text,
-        template_rich_text_quote,
-    } = Args::parse();
-
-    let tera = setup_tera(
-        template_text,
-        template_text_quote,
-        template_rich_text,
-        template_rich_text_quote,
-    )
-    .await?;
+    let Args { token, quote, timezone, templates } = Args::parse();
+    let tera = setup_tera(&templates).await?;
 
     let mut clipboard = Clipboard::new()?;
     let content = clipboard.get_text()?;
@@ -48,8 +33,8 @@ async fn main() -> Result<()> {
 
     let message = SlackMessage::try_from(&url)?;
     let message = message.resolve(&token).await?;
-    let context = setup_context(&message, &timezone)?;
 
+    let context = setup_context(&message, &timezone)?;
     let (rich_text, text) = if quote {
         (tera.render("rich_text_quote", &context)?, tera.render("text_quote", &context)?)
     } else {
@@ -64,37 +49,33 @@ async fn main() -> Result<()> {
     Ok(())
 }
 
-async fn setup_tera(
-    text: Option<PathBuf>,
-    text_quote: Option<PathBuf>,
-    rich_text: Option<PathBuf>,
-    rich_text_quote: Option<PathBuf>,
-) -> Result<Tera> {
+async fn setup_tera(templates: &Templates) -> Result<Tera> {
+    let Templates { text, text_quote, rich_text, rich_text_quote } = templates;
+
     let mut tera = Tera::default();
-
-    let template_text = match text {
-        Some(path) => &read_to_string(path).await?,
-        None => TEMPLATE_TEXT,
-    };
-    let template_text_quote = match text_quote {
-        Some(path) => &read_to_string(path).await?,
-        None => TEMPLATE_TEXT_QUOTE,
-    };
-    let template_rich_text = match rich_text {
-        Some(path) => &read_to_string(path).await?,
-        None => TEMPLATE_RICH_TEXT,
-    };
-    let template_rich_text_quote = match rich_text_quote {
-        Some(path) => &read_to_string(path).await?,
-        None => TEMPLATE_RICH_TEXT_QUOTE,
-    };
-
-    tera.add_raw_template("text", template_text)?;
-    tera.add_raw_template("text_quote", template_text_quote)?;
-    tera.add_raw_template("rich_text", template_rich_text)?;
-    tera.add_raw_template("rich_text_quote", template_rich_text_quote)?;
+    tera.add_raw_template("text", get_template(&text, TEMPLATE_TEXT).await)?;
+    tera.add_raw_template("text_quote", get_template(&text_quote, TEMPLATE_TEXT_QUOTE).await)?;
+    tera.add_raw_template("rich_text", get_template(&rich_text, TEMPLATE_RICH_TEXT).await)?;
+    tera.add_raw_template(
+        "rich_text_quote",
+        get_template(&rich_text_quote, TEMPLATE_RICH_TEXT_QUOTE).await,
+    )?;
 
     Ok(tera)
+}
+
+async fn get_template<'a>(input: &'a Option<String>, default: &'a str) -> &'a str {
+    match input {
+        Some(pathlike) => {
+            if PathBuf::from(&pathlike).exists() {
+                let content = read_to_string(&pathlike).await.unwrap_or_default();
+                Box::leak(content.into_boxed_str())
+            } else {
+                Box::leak(pathlike.clone().into_boxed_str())
+            }
+        }
+        None => default,
+    }
 }
 
 fn setup_context(message: &SlackMessage<Resolved>, timezone: &str) -> Result<Context> {

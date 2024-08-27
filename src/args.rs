@@ -1,5 +1,3 @@
-use std::path::PathBuf;
-
 use clap::Parser;
 
 #[derive(Parser)]
@@ -9,7 +7,7 @@ pub struct Args {
     #[arg(long, env = "SLACK_TOKEN")]
     pub token: String,
 
-    /// Include the message body as a quote
+    /// Include the message body as a quote.
     #[arg(short, long)]
     pub quote: bool,
 
@@ -17,19 +15,29 @@ pub struct Args {
     #[arg(short, long, default_value = "Asia/Tokyo")]
     pub timezone: String,
 
-    /// Path to the template file for plain text, without quote
+    #[command(flatten)]
+    pub templates: Templates,
+}
+
+#[derive(Parser)]
+pub struct Templates {
+    /// Path to the template file or a string for plain text (without quote). Leave empty to use
+    /// the default.
     #[arg(long, env = "TEMPLATE_TEXT")]
-    pub template_text: Option<PathBuf>,
+    pub text: Option<String>,
 
-    /// Path to the template file for plain text, with quote
+    /// Path to the template file or a string for plain text (with quote). Leave empty to use the
+    /// default.
     #[arg(long, env = "TEMPLATE_TEXT_QUOTE")]
-    pub template_text_quote: Option<PathBuf>,
+    pub text_quote: Option<String>,
 
-    /// Path to the template file for rich text, without quote
+    /// Path to the template file or a string for rich text (without quote). Leave empty to use the
+    /// default.
     #[arg(long, env = "TEMPLATE_RICH_TEXT")]
-    pub template_rich_text: Option<PathBuf>,
+    pub rich_text: Option<String>,
 
-    /// Path to the template file for rich text, with quote
+    /// Path to the template file or a string for rich text (with quote). Leave empty to use the
+    /// template.
     #[arg(long, env = "TEMPLATE_RICH_TEXT_QUOTE")]
-    pub template_rich_text_quote: Option<PathBuf>,
+    pub rich_text_quote: Option<String>,
 }
