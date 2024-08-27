@@ -8,10 +8,12 @@ Expose your Slack user token as `SLACK_TOKEN` environment variable to use the ut
 
 Following permission scopes would be required. The required scopes depend on the type of channel-like object you're working with. You only need the scopes corresponding to that conversation type, found below.
 
-- Public channels: [`channels:history`](https://api.slack.com/scopes/channels:history) and  [`channels:read`](https://api.slack.com/scopes/channels:read)
-- Private channels: [`groups:history`](https://api.slack.com/scopes/groups:history) and  [`groups:read`](https://api.slack.com/scopes/groups:read)
-- Direct messages: [`im:history`](https://api.slack.com/scopes/im:history) and  [`im:read`](https://api.slack.com/scopes/im:read)
-- Group direct messages: [`mpim:history`](https://api.slack.com/scopes/mpim:history) and  [`mpim:read`](https://api.slack.com/scopes/mpim:read)
+| Conversation Type     | Required Scopes                                                                                                                     |
+|-----------------------|-------------------------------------------------------------------------------------------------------------------------------------|
+| Public channels       | [`channels:history`](https://api.slack.com/scopes/channels:history),  [`channels:read`](https://api.slack.com/scopes/channels:read) |
+| Private channels      | [`groups:history`](https://api.slack.com/scopes/groups:history),  [`groups:read`](https://api.slack.com/scopes/groups:read)         |
+| Direct messages       | [`im:history`](https://api.slack.com/scopes/im:history),  [`im:read`](https://api.slack.com/scopes/im:read)                         |
+| Group direct messages | [`mpim:history`](https://api.slack.com/scopes/mpim:history),  [`mpim:read`](https://api.slack.com/scopes/mpim:read)                 |
 
 ## Usage
 
@@ -27,15 +29,20 @@ Options:
   -q, --quote
           Include the message body as a quote
   -t, --timezone <TIMEZONE>
-          The IANA time zone database identifiers to use for the timestamp [default: Asia/Tokyo]
-      --template-text <TEMPLATE_TEXT>                        
-          Path to the template file for plain text, without quote [env: TEMPLATE_TEXT=]
-      --template-text-quote <TEMPLATE_TEXT_QUOTE>            
-          Path to the template file for plain text, with quote [env: TEMPLATE_TEXT_QUOTE=]
-      --template-rich-text <TEMPLATE_RICH_TEXT>              
-          Path to the template file for rich text, without quote [env: TEMPLATE_RICH_TEXT=]
-      --template-rich-text-quote <TEMPLATE_RICH_TEXT_QUOTE>  
-          Path to the template file for rich text, with quote [env: TEMPLATE_RICH_TEXT_QUOTE=]
+          The IANA time zone database identifiers to use for the timestamp
+          [default: Asia/Tokyo]
+      --text <TEXT>
+          Path to the template file or a string for plain text (without
+          quote). Leave empty to use the default [env: TEMPLATE_TEXT=]
+      --text-quote <TEXT_QUOTE>
+          Path to the template file or a string for plain text (with quote).
+          Leave empty to use the default [env: TEMPLATE_TEXT_QUOTE=]
+      --rich-text <RICH_TEXT>
+          Path to the template file or a string for rich text (without quote).
+          Leave empty to use the default [env: TEMPLATE_RICH_TEXT=]
+      --rich-text-quote <RICH_TEXT_QUOTE>
+          Path to the template file or a string for rich text (with quote).
+          Leave empty to use the template [env: TEMPLATE_RICH_TEXT_QUOTE=]
   -h, --help
           Print help
   -V, --version
@@ -44,12 +51,14 @@ Options:
 
 ### Templates
 
-You can customize the output format by providing a template file via the `--template-*` options, or respective environment variables. The template file is a plain text file that contains the format of the output message. Under the hood, this program uses the [tera](https://tera.netlify.app/) template engine, allowing you to take full advantage of its capabilities.
+You can customize the output format by providing a path to the template file or a string via the options, or respective environment variables. The template file is a plain text file that contains the format of the output message. Leave empty to use the default. Under the hood, this program uses the [tera](https://tera.netlify.app/) template engine, allowing you to take full advantage of its capabilities.
 
-- `--template-text`: The template file for plain text, without quote.
-- `--template-text-quote`: The template file for plain text, with quote.
-- `--template-rich-text`: The template file for rich text (basically an HTML), without quote.
-- `--template-rich-text-quote`: The template file for rich text, with quote.
+| Option              | Environment Variable       | For                         |
+|---------------------|----------------------------|-----------------------------|
+| `--text`            | `TEMPLATE_TEXT`            | plain text (without quote). |
+| `--text-quote`      | `TEMPLATE_TEXT_QUOTE`      | plain text (with quote).    |
+| `--rich-text`       | `TEMPLATE_RICH_TEXT`       | rich text (without quote).  |
+| `--rich-text-quote` | `TEMPLATE_RICH_TEXT_QUOTE` | rich text (with quote).     |
 
 The pre-defined variables are below:
 
