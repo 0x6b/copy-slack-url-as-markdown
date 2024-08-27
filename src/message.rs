@@ -18,8 +18,8 @@ pub trait State {}
 #[derive(Debug)]
 pub struct Initialized<'a> {
     pub url: &'a str,
-    pub channel_id: String,
-    pub ts: String,
+    pub channel_id: &'a str,
+    pub ts: &'a str,
     pub ts64: f64,
     pub thread_ts64: Option<f64>,
 }
@@ -55,13 +55,13 @@ where
     }
 }
 
-impl<'a> TryFrom<&'a str> for SlackMessage<Initialized<'a>> {
+impl<'a> TryFrom<&'a Url> for SlackMessage<Initialized<'a>> {
     type Error = Error;
 
-    fn try_from(text: &'a str) -> Result<SlackMessage<Initialized<'a>>> {
-        let (channel_id, ts, ts64, thread_ts64) = Self::parse(text)?;
+    fn try_from(url: &'a Url) -> Result<SlackMessage<Initialized<'a>>> {
+        let (channel_id, ts, ts64, thread_ts64) = Self::parse(&url)?;
         Ok(SlackMessage {
-            state: Initialized { url: text, channel_id, ts, ts64, thread_ts64 },
+            state: Initialized { url: url.as_str(), channel_id, ts, ts64, thread_ts64 },
         })
     }
 }
@@ -118,20 +118,13 @@ impl SlackMessage<Initialized<'_>> {
         })
     }
 
-    fn parse(text: &str) -> Result<(String, String, f64, Option<f64>)> {
-        let text = text.trim();
-        let url = match Url::parse(text) {
-            Ok(u) => u,
-            Err(e) => bail!("Failed to parse the clipboard content: {e}\nProvided:\n{text}"),
-        };
-
+    fn parse(url: &Url) -> Result<(&str, &str, f64, Option<f64>)> {
         let channel_id = url
             .path_segments()
             .ok_or(anyhow!("Failed to get path segments"))?
             .nth(1)
             .ok_or(anyhow!("Failed to get the last path segment"))?
-            .to_string();
-
+;
         let ts = url
             .path_segments()
             .ok_or(anyhow!("Failed to get path segments"))?
@@ -143,7 +136,7 @@ impl SlackMessage<Initialized<'_>> {
         let params: QueryParams =
             serde_qs::Config::new(5, false).deserialize_str(url.query().unwrap_or(""))?;
 
-        Ok((channel_id, ts.to_string(), ts64, params.thread_ts))
+        Ok((channel_id, ts, ts64, params.thread_ts))
     }
 
     fn convert_to_ts(input: &str) -> Result<(&str, f64), ParseFloatError> {
