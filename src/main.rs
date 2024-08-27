@@ -100,7 +100,7 @@ fn setup_context(message: &SlackMessage<Resolved>, timezone: &str) -> Result<Con
     let mut context = Context::new();
 
     context.insert("channel_name", &message.channel_name);
-    context.insert("url", &message.url);
+    context.insert("url", &message.url.as_str());
     context.insert(
         "timestamp",
         &Timestamp::from_microsecond(message.ts)?
