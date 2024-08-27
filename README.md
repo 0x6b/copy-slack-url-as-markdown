@@ -55,29 +55,28 @@ The pre-defined variables are below:
 
 | Variable               | `strftime` Specifier     | Example                              | Description                                                                      |
 |------------------------|--------------------------|--------------------------------------|----------------------------------------------------------------------------------|
-| `{{ channel_name }}`   | -                        | `general`                            | The name of the channel the message belongs to.                                  |
-| `{{ url }}`            | -                        | `https://xxx.slack.com/archives/...` | The Slack URL of the message.                                                    |
-| `{{ text }}`           | -                        | `message text`                       | The text of the message, which is the vector of the texts split by the new line. |
-| `{{ timestamp }}`      | `%Y-%m-%d %H:%M:%S (%Z)` | `2024-08-27 11:28:53 (JST)`          | The timestamp of the message.                                                    |
-| `{{ iso_date }}`       | `%F`                     | `2024-07-14`                         | Equivalent to `%Y-%m-%d`.                                                        |
-| `{{ clock }}`          | `%T`                     | `23:30:59`                           | Equivalent to `%H:%M:%S`.                                                        |
+| `{{ channel_name }}`   | (not available)          | `general`                            | The name of the channel the message belongs to.                                  |
+| `{{ url }}`            | (not available)          | `https://xxx.slack.com/archives/...` | The Slack URL of the message.                                                    |
+| `{{ text }}`           | (not available)          | `Hello, world!`                      | The text of the message, which is the vector of the texts split by the new line. |
+| `{{ timestamp }}`      | `%Y-%m-%d %H:%M:%S (%Z)` | `2024-08-27 16:27:44 (JST)`          | The timestamp of the message.                                                    |
+| `{{ iso_date }}`       | `%F`                     | `2024-08-27`                         | Equivalent to `%Y-%m-%d`.                                                        |
+| `{{ clock }}`          | `%T`                     | `16:27:44`                           | Equivalent to `%H:%M:%S`.                                                        |
 | `{{ year }}`           | `%Y`                     | `2024`                               | A full year, including century. Zero padded to 4 digits.                         |
 | `{{ year_2digit }}`    | `%y`                     | `24`                                 | A two-digit year. Represents only 1969-2068. Zero padded.                        |
-| `{{ month }}`          | `%B`                     | `June`                               | The full month name.                                                             |
-| `{{ month_abbrev }}`   | `%b`                     | `Jun`                                | The abbreviated month name,.                                                     |
-| `{{ month_2digit }}`   | `%m`                     | `01`                                 | The month. Zero padded.                                                          |
-| `{{ day }}`            | `%d`                     | `25`                                 | The day of the month. Zero-padded.                                               |
-| `{{ day_space }}`      | `%e`                     | `5`                                  | The day of the month. Space padded.                                              |
-| `{{ hour24 }}`         | `%H`                     | `23`                                 | The hour in a 24 hour clock. Zero padded.                                        |
-| `{{ hour12 }}`         | `%I`                     | `11`                                 | The hour in a 12 hour clock. Zero padded.                                        |
-| `{{ minute }}`         | `%M`                     | `04`                                 | The minute. Zero padded.                                                         |
-| `{{ second }}`         | `%S`                     | `59`                                 | The second. Zero padded.                                                         |
+| `{{ month }}`          | `%B`                     | `August`                             | The full month name.                                                             |
+| `{{ month_abbrev }}`   | `%b`                     | `Aug`                                | The abbreviated month name,.                                                     |
+| `{{ month_2digit }}`   | `%m`                     | `08`                                 | The month. Zero padded.                                                          |
+| `{{ day }}`            | `%d`                     | `27`                                 | The day of the month. Zero-padded.                                               |
+| `{{ day_space }}`      | `%e`                     | `27`                                 | The day of the month. Space padded.                                              |
+| `{{ hour24 }}`         | `%H`                     | `16`                                 | The hour in a 24 hour clock. Zero padded.                                        |
+| `{{ hour12 }}`         | `%I`                     | `04`                                 | The hour in a 12 hour clock. Zero padded.                                        |
+| `{{ minute }}`         | `%M`                     | `27`                                 | The minute. Zero padded.                                                         |
+| `{{ second }}`         | `%S`                     | `44`                                 | The second. Zero padded.                                                         |
 | `{{ ampm }}`           | `%p`                     | `PM`                                 | Whether the time is in the AM or PM, uppercase.                                  |
-| `{{ ampm_lower }}`     | `%P`                     | `am`                                 | Whether the time is in the AM or PM, lowercase.                                  |
-| `{{ weekday }}`        | `%A`                     | `Sunday`                             | The full weekday.                                                                |
-| `{{ weekday_abbrev }}` | `%a`                     | `Sun`                                | The abbreviated weekday.                                                         |
-| `{{ tz_iana }}`        | `%V`                     | `Asia/Tokyo`, `+0900`                | An IANA time zone identifier, or `%z` if one doesn't exist.                      |
-| `{{ tz_iana_colon }}`  | `%:V`                    | `Asia/Tokyo`, `+09:00`               | An IANA time zone identifier, or `%:z` if one doesn't exist.                     |
+| `{{ ampm_lower }}`     | `%P`                     | `pm`                                 | Whether the time is in the AM or PM, lowercase.                                  |
+| `{{ weekday }}`        | `%A`                     | `Tuesday`                            | The full weekday.                                                                |
+| `{{ weekday_abbrev }}` | `%a`                     | `Tue`                                | The abbreviated weekday.                                                         |
+| `{{ tz_iana }}`        | `%V`                     | `Asia/Tokyo`                         | An IANA time zone identifier, or `%z` if one doesn't exist.                      |
 | `{{ tz_abbrev }}`      | `%Z`                     | `JST`                                | A time zone abbreviation. Supported when formatting only.                        |
 | `{{ offset }}`         | `%z`                     | `+0900`                              | A time zone offset in the format `[+-]HHMM[SS]`.                                 |
 | `{{ offset_colon }}`   | `%:z`                    | `+09:00`                             | A time zone offset in the format `[+-]HH:MM[:SS]`.                               |
