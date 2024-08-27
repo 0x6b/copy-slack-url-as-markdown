@@ -98,32 +98,33 @@ fn setup_context(message: &SlackMessage<Resolved>, timezone: &str) -> Result<Con
             .collect::<Vec<_>>(),
     );
 
-    context.insert("timestamp", &datetime.strftime("%Y-%m-%d %H:%M:%S (%Z)").to_string());
-    context.insert("iso_date", &datetime.strftime("%F").to_string());
-    context.insert("clock", &datetime.strftime("%T").to_string());
+    let mut insert = |key, format| context.insert(key, &datetime.strftime(format).to_string());
+    insert("timestamp", "%Y-%m-%d %H:%M:%S (%Z)");
+    insert("iso_date", "%F");
+    insert("clock", "%T");
 
-    context.insert("year", &datetime.strftime("%Y").to_string());
-    context.insert("year_2digit", &datetime.strftime("%y").to_string());
-    context.insert("month", &datetime.strftime("%B").to_string());
-    context.insert("month_abbrev", &datetime.strftime("%b").to_string());
-    context.insert("month_2digit", &datetime.strftime("%m").to_string());
-    context.insert("day", &datetime.strftime("%d").to_string());
-    context.insert("day_space", &datetime.strftime("%e").to_string());
+    insert("year", "%Y");
+    insert("year_2digit", "%y");
+    insert("month", "%B");
+    insert("month_abbrev", "%b");
+    insert("month_2digit", "%m");
+    insert("day", "%d");
+    insert("day_space", "%e");
 
-    context.insert("hour24", &datetime.strftime("%H").to_string());
-    context.insert("hour12", &datetime.strftime("%I").to_string());
-    context.insert("minute", &datetime.strftime("%M").to_string());
-    context.insert("second", &datetime.strftime("%S").to_string());
-    context.insert("ampm", &datetime.strftime("%p").to_string());
-    context.insert("ampm_lower", &datetime.strftime("%P").to_string());
-    context.insert("weekday", &datetime.strftime("%A").to_string());
-    context.insert("weekday_abbrev", &datetime.strftime("%a").to_string());
+    insert("hour24", "%H");
+    insert("hour12", "%I");
+    insert("minute", "%M");
+    insert("second", "%S");
+    insert("ampm", "%p");
+    insert("ampm_lower", "%P");
+    insert("weekday", "%A");
+    insert("weekday_abbrev", "%a");
 
-    context.insert("tz_iana", &datetime.strftime("%V").to_string());
-    context.insert("tz_iana_colon", &datetime.strftime("%:V").to_string());
-    context.insert("tz_abbrev", &datetime.strftime("%Z").to_string());
-    context.insert("offset", &datetime.strftime("%z").to_string());
-    context.insert("offset_colon", &datetime.strftime("%:z").to_string());
+    insert("tz_iana", "%V");
+    insert("tz_iana_colon", "%:V");
+    insert("tz_abbrev", "%Z");
+    insert("offset", "%z");
+    insert("offset_colon", "%:z");
 
     Ok(context)
 }
