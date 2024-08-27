@@ -1,5 +1,3 @@
-use std::ops::Deref;
-
 use clap::Parser;
 
 #[derive(Parser)]
@@ -42,24 +40,4 @@ pub struct Templates {
     /// template.
     #[arg(long, env = "TEMPLATE_RICH_TEXT_QUOTE")]
     pub rich_text_quote: Option<String>,
-}
-
-pub enum TemplateType {
-    Text,
-    TextQuote,
-    RichText,
-    RichTextQuote,
-}
-
-impl Deref for TemplateType {
-    type Target = str;
-
-    fn deref(&self) -> &Self::Target {
-        match self {
-            TemplateType::Text => "text",
-            TemplateType::TextQuote => "text_quote",
-            TemplateType::RichText => "rich_text",
-            TemplateType::RichTextQuote => "rich_text_quote",
-        }
-    }
 }

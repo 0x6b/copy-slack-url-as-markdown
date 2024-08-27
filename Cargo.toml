@@ -37,6 +37,8 @@ jiff = "0.1.10"
 
 # Templating
 tera = "1.20.0"
+strum = "0.26.3"
+strum_macros = "0.26.4"
 
 [profile.dev]
 debug = 0
