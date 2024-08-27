@@ -1,9 +1,5 @@
 use std::path::PathBuf;
 
-use crate::{
-    args::Args,
-    message::{Resolved, SlackMessage},
-};
 use anyhow::Result;
 use arboard::Clipboard;
 use clap::Parser;
@@ -11,6 +7,11 @@ use jiff::Timestamp;
 use tera::{Context, Tera};
 use tokio::fs::read_to_string;
 use url::Url;
+
+use crate::{
+    args::Args,
+    message::{Resolved, SlackMessage},
+};
 
 mod args;
 mod message;
@@ -98,16 +99,10 @@ async fn setup_tera(
 
 fn setup_context(message: &SlackMessage<Resolved>, timezone: &str) -> Result<Context> {
     let mut context = Context::new();
+    let datetime = Timestamp::from_microsecond(message.ts)?.intz(timezone)?;
 
     context.insert("channel_name", &message.channel_name);
     context.insert("url", &message.url.as_str());
-    context.insert(
-        "timestamp",
-        &Timestamp::from_microsecond(message.ts)?
-            .intz(timezone)?
-            .strftime("%Y-%m-%d %H:%M:%S (%Z)")
-            .to_string(),
-    );
     context.insert(
         "text",
         &message
@@ -117,6 +112,30 @@ fn setup_context(message: &SlackMessage<Resolved>, timezone: &str) -> Result<Con
             .lines()
             .collect::<Vec<_>>(),
     );
+
+    context.insert("timestamp", &datetime.strftime("%Y-%m-%d %H:%M:%S (%Z)").to_string());
+    context.insert("weekday_full", &datetime.strftime("%A").to_string());
+    context.insert("weekday_abbrev", &datetime.strftime("%a").to_string());
+    context.insert("month_full", &datetime.strftime("%B").to_string());
+    context.insert("month_abbrev", &datetime.strftime("%b").to_string());
+    context.insert("day_zero", &datetime.strftime("%d").to_string());
+    context.insert("day_space", &datetime.strftime("%e").to_string());
+    context.insert("iso_date", &datetime.strftime("%F").to_string());
+    context.insert("hour24", &datetime.strftime("%H").to_string());
+    context.insert("hour12", &datetime.strftime("%I").to_string());
+    context.insert("minute", &datetime.strftime("%M").to_string());
+    context.insert("month", &datetime.strftime("%m").to_string());
+    context.insert("ampm_lower", &datetime.strftime("%P").to_string());
+    context.insert("ampm_upper", &datetime.strftime("%p").to_string());
+    context.insert("second", &datetime.strftime("%S").to_string());
+    context.insert("clock", &datetime.strftime("%T").to_string());
+    context.insert("iana_nocolon", &datetime.strftime("%V").to_string());
+    context.insert("iana_colon", &datetime.strftime("%:V").to_string());
+    context.insert("year", &datetime.strftime("%Y").to_string());
+    context.insert("year_2digit", &datetime.strftime("%y").to_string());
+    context.insert("tzabbrev", &datetime.strftime("%Z").to_string());
+    context.insert("offset_nocolon", &datetime.strftime("%z").to_string());
+    context.insert("offset_colon", &datetime.strftime("%:z").to_string());
 
     Ok(context)
 }
