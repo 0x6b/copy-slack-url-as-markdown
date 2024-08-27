@@ -267,6 +267,7 @@ mod tests {
         Ok(())
     }
 
+    /// Actually, this test is not a test but a helper function to generate the Markdown table.
     #[test]
     fn list_context_keys_for_documentation() -> Result<()> {
         let datetime = jiff::Timestamp::from_microsecond(1724261952503309)?.intz("Asia/Tokyo")?;
