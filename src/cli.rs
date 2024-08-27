@@ -101,28 +101,28 @@ impl Cli<Uninitialized> {
     pub async fn new() -> Result<Cli<Initialized>> {
         let Uninitialized { token, quote, timezone, templates } = CliArgs::parse();
 
-        Ok(Cli { state: Initialized { token, quote, timezone, tera: Self::setup_tera(&templates).await? } })
+        Ok(Cli {
+            state: Initialized {
+                token,
+                quote,
+                timezone,
+                tera: Self::setup_tera(&templates).await?,
+            },
+        })
     }
 
-    #[rustfmt::skip]
-    async fn setup_tera(templates: &Templates) -> Result<Tera> {
+    async fn setup_tera(arg: &Templates) -> Result<Tera> {
         let mut tera = Tera::default();
-        tera.add_raw_template(
-            Text.as_ref(),
-            Self::get_template(&templates.text, TEMPLATE_TEXT).await
-        )?;
-        tera.add_raw_template(
-            TextQuote.as_ref(),
-            Self::get_template(&templates.text_quote, TEMPLATE_TEXT_QUOTE).await
-        )?;
-        tera.add_raw_template(
-            RichText.as_ref(),
-            Self::get_template(&templates.rich_text, TEMPLATE_RICH_TEXT).await,
-        )?;
-        tera.add_raw_template(
-            RichTextQuote.as_ref(),
-            Self::get_template(&templates.rich_text_quote, TEMPLATE_RICH_TEXT_QUOTE).await,
-        )?;
+
+        #[rustfmt::skip]
+        for (name, pathlike, default) in [
+            (Text,          &arg.text,            TEMPLATE_TEXT),
+            (TextQuote,     &arg.text_quote,      TEMPLATE_TEXT_QUOTE),
+            (RichText,      &arg.rich_text,       TEMPLATE_RICH_TEXT),
+            (RichTextQuote, &arg.rich_text_quote, TEMPLATE_RICH_TEXT_QUOTE),
+        ] {
+            tera.add_raw_template(name.as_ref(), Self::get_template(pathlike, default).await)?;
+        }
 
         Ok(tera)
     }
@@ -198,13 +198,13 @@ impl Cli<Initialized> {
             Offset,
             OffsetColon,
         ]
-            .iter()
-            .for_each(|key| {
-                context.insert(
-                    key.as_ref(),
-                    &datetime.strftime(key.get_str("format").unwrap()).to_string(),
-                )
-            });
+        .iter()
+        .for_each(|key| {
+            context.insert(
+                key.as_ref(),
+                &datetime.strftime(key.get_str("format").unwrap()).to_string(),
+            )
+        });
 
         Ok(context)
     }

@@ -237,32 +237,36 @@ mod tests {
     #[test]
     fn test_format() -> Result<()> {
         let datetime = jiff::Timestamp::from_microsecond(1724743664325609)?.intz("Asia/Tokyo")?;
-        let test = |key: ContextKey, expected: &str| {
-            assert_eq!(datetime.strftime(key.get_str("format").unwrap()).to_string(), expected);
-        };
 
-        test(Timestamp, "2024-08-27 16:27:44 (JST)");
-        test(IsoDate, "2024-08-27");
-        test(Clock, "16:27:44");
-        test(Year, "2024");
-        test(Year2Digit, "24");
-        test(Month, "August");
-        test(MonthAbbrev, "Aug");
-        test(Month2Digit, "08");
-        test(Day, "27");
-        test(DaySpace, "27");
-        test(Hour24, "16");
-        test(Hour12, "04");
-        test(Minute, "27");
-        test(Second, "44");
-        test(AmPm, "PM");
-        test(AmPmLower, "pm");
-        test(Weekday, "Tuesday");
-        test(WeekdayAbbrev, "Tue");
-        test(TzIana, "Asia/Tokyo");
-        test(TzAbbrev, "JST");
-        test(Offset, "+0900");
-        test(OffsetColon, "+09:00");
+        #[rustfmt::skip]
+        [
+            (Timestamp,     "2024-08-27 16:27:44 (JST)"),
+            (IsoDate,       "2024-08-27"),
+            (Clock,         "16:27:44"),
+            (Year,          "2024"),
+            (Year2Digit,    "24"),
+            (Month,         "August"),
+            (MonthAbbrev,   "Aug"),
+            (Month2Digit,   "08"),
+            (Day,           "27"),
+            (DaySpace,      "27"),
+            (Hour24,        "16"),
+            (Hour12,        "04"),
+            (Minute,        "27"),
+            (Second,        "44"),
+            (AmPm,          "PM"),
+            (AmPmLower,     "pm"),
+            (Weekday,       "Tuesday"),
+            (WeekdayAbbrev, "Tue"),
+            (TzIana,        "Asia/Tokyo"),
+            (TzAbbrev,      "JST"),
+            (Offset,        "+0900"),
+            (OffsetColon,   "+09:00"),
+        ]
+        .into_iter()
+        .for_each(|(key, expected)| {
+            assert_eq!(datetime.strftime(key.get_str("format").unwrap()).to_string(), expected)
+        });
 
         Ok(())
     }

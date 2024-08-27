@@ -4,9 +4,9 @@ use anyhow::{anyhow, bail, Error, Result};
 use serde::Deserialize;
 use url::Url;
 
-use crate::{
-    slack_client,
-    slack_client::{HistoryQuery, InfoQuery, RepliesQuery},
+use crate::slack_client::{
+    query::{History, Info, Replies},
+    Client,
 };
 
 #[derive(Deserialize, Debug, Clone, Copy)]
@@ -68,13 +68,13 @@ impl<'a> TryFrom<&'a Url> for SlackMessage<Initialized<'a>> {
 
 impl SlackMessage<Initialized<'_>> {
     pub async fn resolve(&self, token: &str) -> Result<SlackMessage<Resolved>> {
-        let client = slack_client::Client::new(token)?;
+        let client = Client::new(token)?;
         let channel_name = client
-            .conversations_info(&InfoQuery { channel: self.channel_id })
+            .conversations_info(&Info { channel: self.channel_id })
             .await?
             .name_normalized;
         let history = client
-            .conversations_history(&HistoryQuery {
+            .conversations_history(&History {
                 channel: self.channel_id,
                 latest: self.ts64,
                 oldest: self.ts64,
@@ -89,9 +89,11 @@ impl SlackMessage<Initialized<'_>> {
             }
         };
 
+        // If the message didn't send to the main channel, the response of the conversation.history
+        // will be blank. I'm not sure why. Try to fetch using conversation.replies
         if body.join("").is_empty() {
             let replies = client
-                .conversations_replies(&RepliesQuery {
+                .conversations_replies(&Replies {
                     channel: self.channel_id,
                     ts: self.thread_ts64.unwrap_or(self.ts64),
                     latest: self.ts64,
