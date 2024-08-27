@@ -70,12 +70,12 @@ impl SlackMessage<Initialized<'_>> {
     pub async fn resolve(&self, token: &str) -> Result<SlackMessage<Resolved>> {
         let client = slack_client::Client::new(token)?;
         let channel_name = client
-            .conversations_info(&InfoQuery { channel: self.channel_id.clone() })
+            .conversations_info(&InfoQuery { channel: &self.channel_id })
             .await?
             .name_normalized;
         let history = client
             .conversations_history(&HistoryQuery {
-                channel: self.channel_id.clone(),
+                channel: &self.channel_id,
                 latest: self.ts64,
                 oldest: self.ts64,
                 limit: 1,
@@ -92,7 +92,7 @@ impl SlackMessage<Initialized<'_>> {
         if body.join("").is_empty() {
             let replies = client
                 .conversations_replies(&RepliesQuery {
-                    channel: self.channel_id.clone(),
+                    channel: &self.channel_id,
                     ts: self.thread_ts64.unwrap_or(self.ts64),
                     latest: self.ts64,
                     oldest: self.ts64,

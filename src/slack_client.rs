@@ -20,7 +20,7 @@ impl Client {
         Ok(Self { endpoint: "https://slack.com/api".into(), client })
     }
 
-    pub async fn conversations_info(&self, query: &InfoQuery) -> Result<Channel> {
+    pub async fn conversations_info(&self, query: &InfoQuery<'_>) -> Result<Channel> {
         Ok(self
             .request::<InfoQuery, InfoResponse>("conversations.info", query)
             .await?
@@ -29,7 +29,7 @@ impl Client {
 
     pub async fn conversations_history(
         &self,
-        query: &HistoryQuery,
+        query: &HistoryQuery<'_>,
     ) -> Result<Option<Vec<Message>>> {
         Ok(self
             .request::<HistoryQuery, ConversationsResponse>("conversations.history", query)
@@ -39,7 +39,7 @@ impl Client {
 
     pub async fn conversations_replies(
         &self,
-        query: &RepliesQuery,
+        query: &RepliesQuery<'_>,
     ) -> Result<Option<Vec<Message>>> {
         Ok(self
             .request::<RepliesQuery, ConversationsResponse>("conversations.replies", query)
@@ -66,8 +66,8 @@ impl Client {
 }
 
 #[derive(Serialize)]
-pub struct InfoQuery {
-    pub channel: String,
+pub struct InfoQuery<'a> {
+    pub channel: &'a str,
 }
 
 #[derive(Deserialize)]
@@ -81,8 +81,8 @@ pub struct Channel {
 }
 
 #[derive(Serialize)]
-pub struct HistoryQuery {
-    pub channel: String,
+pub struct HistoryQuery<'a> {
+    pub channel: &'a str,
     pub latest: f64,
     pub oldest: f64,
     pub limit: u64,
@@ -90,8 +90,8 @@ pub struct HistoryQuery {
 }
 
 #[derive(Serialize)]
-pub struct RepliesQuery {
-    pub channel: String,
+pub struct RepliesQuery<'a> {
+    pub channel: &'a str,
     pub ts: f64,
     pub latest: f64,
     pub oldest: f64,
