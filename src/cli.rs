@@ -111,10 +111,10 @@ impl Cli<Uninitialized> {
         })
     }
 
+    #[rustfmt::skip]
     async fn setup_tera(arg: &Templates) -> Result<Tera> {
         let mut tera = Tera::default();
 
-        #[rustfmt::skip]
         for (name, pathlike, default) in [
             (Text,          &arg.text,            TEMPLATE_TEXT),
             (TextQuote,     &arg.text_quote,      TEMPLATE_TEXT_QUOTE),
