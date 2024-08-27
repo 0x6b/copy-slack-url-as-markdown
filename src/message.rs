@@ -59,7 +59,7 @@ impl<'a> TryFrom<&'a str> for SlackMessage<Initialized<'a>> {
     type Error = Error;
 
     fn try_from(text: &'a str) -> Result<SlackMessage<Initialized<'a>>> {
-        let (channel_id, ts, ts64, thread_ts64) = Self::parse(text.trim())?;
+        let (channel_id, ts, ts64, thread_ts64) = Self::parse(text)?;
         Ok(SlackMessage {
             state: Initialized { url: text, channel_id, ts, ts64, thread_ts64 },
         })
@@ -119,6 +119,7 @@ impl SlackMessage<Initialized<'_>> {
     }
 
     fn parse(text: &str) -> Result<(String, String, f64, Option<f64>)> {
+        let text = text.trim();
         let url = match Url::parse(text) {
             Ok(u) => u,
             Err(e) => bail!("Failed to parse the clipboard content: {e}\nProvided:\n{text}"),
@@ -142,13 +143,13 @@ impl SlackMessage<Initialized<'_>> {
         let params: QueryParams =
             serde_qs::Config::new(5, false).deserialize_str(url.query().unwrap_or(""))?;
 
-        Ok((channel_id, ts, ts64, params.thread_ts))
+        Ok((channel_id, ts.to_string(), ts64, params.thread_ts))
     }
 
-    fn convert_to_ts(input: &str) -> Result<(String, f64), ParseFloatError> {
-        let numeric_part = input.trim_start_matches(|c: char| !c.is_numeric());
-        let (int_part, decimal_part) = numeric_part.split_at(numeric_part.len() - 6);
+    fn convert_to_ts(input: &str) -> Result<(&str, f64), ParseFloatError> {
+        let num = input.trim_start_matches(|c: char| !c.is_numeric());
+        let (int_part, decimal_part) = num.split_at(num.len() - 6);
         let ts64 = format!("{int_part}.{decimal_part}").parse::<f64>()?;
-        Ok((numeric_part.to_string(), ts64))
+        Ok((num, ts64))
     }
 }
