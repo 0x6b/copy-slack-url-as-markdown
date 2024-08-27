@@ -18,8 +18,8 @@ const TEMPLATE_RICH_TEXT: &str = include_str!("../templates/rich_text");
 const TEMPLATE_RICH_TEXT_QUOTE: &str = include_str!("../templates/rich_text_quote");
 
 pub trait State {}
-
 impl State for Uninitialized {}
+impl State for Initialized {}
 impl State for Resolved {}
 
 pub type CliArgs = Uninitialized;
@@ -66,6 +66,13 @@ pub struct Templates {
     pub rich_text_quote: Option<String>,
 }
 
+pub struct Initialized {
+    pub token: String,
+    pub quote: bool,
+    pub timezone: String,
+    pub tera: Tera,
+}
+
 pub struct Resolved {
     pub quote: bool,
     pub tera: Tera,
@@ -91,24 +98,14 @@ where
 }
 
 impl Cli<Uninitialized> {
-    pub async fn from(url: &url::Url) -> Result<Cli<Resolved>> {
+    pub async fn new() -> Result<Cli<Initialized>> {
         let Uninitialized { token, quote, timezone, templates } = CliArgs::parse();
 
-        let message: SlackMessage<crate::message::Initialized> = SlackMessage::try_from(url)?;
-        let message: SlackMessage<crate::message::Resolved> = message.resolve(&token).await?;
-
-        Ok(Cli {
-            state: Resolved {
-                quote,
-                tera: Self::setup_tera(&templates).await?,
-                context: Self::setup_context(&message, &timezone).await?,
-            },
-        })
+        Ok(Cli { state: Initialized { token, quote, timezone, tera: Self::setup_tera(&templates).await? } })
     }
 
     #[rustfmt::skip]
     async fn setup_tera(templates: &Templates) -> Result<Tera> {
-
         let mut tera = Tera::default();
         tera.add_raw_template(
             Text.as_ref(),
@@ -143,7 +140,21 @@ impl Cli<Uninitialized> {
             None => default,
         }
     }
+}
 
+impl Cli<Initialized> {
+    pub async fn resolve(&self, url: &url::Url) -> Result<Cli<Resolved>> {
+        let message: SlackMessage<crate::message::Initialized> = SlackMessage::try_from(url)?;
+        let message: SlackMessage<crate::message::Resolved> = message.resolve(&self.token).await?;
+
+        Ok(Cli {
+            state: Resolved {
+                quote: self.quote,
+                tera: self.tera.clone(),
+                context: Self::setup_context(&message, &self.timezone).await?,
+            },
+        })
+    }
     async fn setup_context(
         message: &SlackMessage<crate::message::Resolved<'_>>,
         timezone: &str,
@@ -187,13 +198,13 @@ impl Cli<Uninitialized> {
             Offset,
             OffsetColon,
         ]
-        .iter()
-        .for_each(|key| {
-            context.insert(
-                key.as_ref(),
-                &datetime.strftime(key.get_str("format").unwrap()).to_string(),
-            )
-        });
+            .iter()
+            .for_each(|key| {
+                context.insert(
+                    key.as_ref(),
+                    &datetime.strftime(key.get_str("format").unwrap()).to_string(),
+                )
+            });
 
         Ok(context)
     }
