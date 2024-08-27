@@ -21,59 +21,68 @@ impl Client {
     }
 
     pub async fn conversations_info(&self, query: &InfoQuery<'_>) -> Result<Channel> {
-        Ok(self
-            .request::<InfoQuery, InfoResponse>("conversations.info", query)
-            .await?
-            .channel)
+        Ok(self.request::<InfoQuery>(query).await?.channel)
     }
 
     pub async fn conversations_history(
         &self,
         query: &HistoryQuery<'_>,
     ) -> Result<Option<Vec<Message>>> {
-        Ok(self
-            .request::<HistoryQuery, ConversationsResponse>("conversations.history", query)
-            .await?
-            .messages)
+        Ok(self.request::<HistoryQuery>(query).await?.messages)
     }
 
     pub async fn conversations_replies(
         &self,
         query: &RepliesQuery<'_>,
     ) -> Result<Option<Vec<Message>>> {
-        Ok(self
-            .request::<RepliesQuery, ConversationsResponse>("conversations.replies", query)
-            .await?
-            .messages)
+        Ok(self.request::<RepliesQuery>(query).await?.messages)
     }
 
     // Helper method to make a request and deserialize the response into `T`
-    async fn request<T, U>(&self, path: &str, query: &T) -> Result<U>
+    async fn request<T>(&self, query: &T) -> Result<T::Response>
     where
-        T: Serialize,
-        U: DeserializeOwned,
+        T: Query,
     {
         let response = self
             .client
-            .get(&format!("{}/{}?{}", self.endpoint, path, to_string(query)?))
+            .get(&format!("{}/{}?{}", self.endpoint, query.path(), to_string(query)?))
             .send()
             .await?
-            .json::<U>()
+            .json::<T::Response>()
             .await?;
 
         Ok(response)
     }
 }
 
+pub trait Query: Serialize {
+    type Response: Response;
+    fn path(&self) -> &'static str;
+}
+
+// Just an alias for `serde::de::DeserializeOwned`
+#[allow(dead_code)]
+pub trait Response: DeserializeOwned {}
+
 #[derive(Serialize)]
 pub struct InfoQuery<'a> {
     pub channel: &'a str,
+}
+
+impl<'a> Query for InfoQuery<'a> {
+    type Response = InfoResponse;
+
+    fn path(&self) -> &'static str {
+        "conversations.info"
+    }
 }
 
 #[derive(Deserialize)]
 pub struct InfoResponse {
     pub channel: Channel,
 }
+
+impl Response for InfoResponse {}
 
 #[derive(Deserialize)]
 pub struct Channel {
@@ -89,6 +98,14 @@ pub struct HistoryQuery<'a> {
     pub inclusive: bool,
 }
 
+impl<'a> Query for HistoryQuery<'a> {
+    type Response = ConversationsResponse;
+
+    fn path(&self) -> &'static str {
+        "conversations.history"
+    }
+}
+
 #[derive(Serialize)]
 pub struct RepliesQuery<'a> {
     pub channel: &'a str,
@@ -99,10 +116,20 @@ pub struct RepliesQuery<'a> {
     pub inclusive: bool,
 }
 
+impl<'a> Query for RepliesQuery<'a> {
+    type Response = ConversationsResponse;
+
+    fn path(&self) -> &'static str {
+        "conversations.replies"
+    }
+}
+
 #[derive(Deserialize)]
 pub struct ConversationsResponse {
     pub messages: Option<Vec<Message>>,
 }
+
+impl Response for ConversationsResponse {}
 
 #[derive(Deserialize, Debug)]
 pub struct Message {
