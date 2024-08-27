@@ -51,12 +51,36 @@ You can customize the output format by providing a template file via the `--temp
 - `--template-rich-text`: The template file for rich text (basically an HTML), without quote.
 - `--template-rich-text-quote`: The template file for rich text, with quote.
 
-The pre-defined variables below:
+The pre-defined variables are below:
 
-- `{{ channel_name }}`: The name of the channel the message belongs to.
-- `{{ url }}`: The Slack URL of the message.
-- `{{ timestamp }}`: The timestamp of the message.
-- `{{ text }}`: The text of the message, which is the vector of the texts split by the new line.
+| Variable               | `strftime` Specifier     | Example                              | Description                                                                      |
+|------------------------|--------------------------|--------------------------------------|----------------------------------------------------------------------------------|
+| `{{ channel_name }}`   | -                        | `general`                            | The name of the channel the message belongs to.                                  |
+| `{{ url }}`            | -                        | `https://xxx.slack.com/archives/...` | The Slack URL of the message.                                                    |
+| `{{ text }}`           | -                        | `message text`                       | The text of the message, which is the vector of the texts split by the new line. |
+| `{{ timestamp }}`      | `%Y-%m-%d %H:%M:%S (%Z)` | `2024-08-27 11:28:53 (JST)`          | The timestamp of the message.                                                    |
+| `{{ weekday_full }}`   | `%A`                     | `Sunday`                             | The full weekday.                                                                |
+| `{{ weekday_abbrev }}` | `%a`                     | `Sun`                                | The abbreviated weekday.                                                         |
+| `{{ month_full }}`     | `%B`                     | `June`                               | The full month name.                                                             |
+| `{{ month_abbrev }}`   | `%b`                     | `Jun`                                | The abbreviated month name,.                                                     |
+| `{{ day_zero }}`       | `%d`                     | `25`                                 | The day of the month. Zero-padded.                                               |
+| `{{ day_space }}`      | `%e`                     | `5`                                  | The day of the month. Space padded.                                              |
+| `{{ iso_date }}`       | `%F`                     | `2024-07-14`                         | Equivalent to `%Y-%m-%d`.                                                        |
+| `{{ hour24 }}`         | `%H`                     | `23`                                 | The hour in a 24 hour clock. Zero padded.                                        |
+| `{{ hour12 }}`         | `%I`                     | `11`                                 | The hour in a 12 hour clock. Zero padded.                                        |
+| `{{ minute }}`         | `%M`                     | `04`                                 | The minute. Zero padded.                                                         |
+| `{{ month }}`          | `%m`                     | `01`                                 | The month. Zero padded.                                                          |
+| `{{ ampm_lower }}`     | `%P`                     | `am`                                 | Whether the time is in the AM or PM, lowercase.                                  |
+| `{{ ampm_upper }}`     | `%p`                     | `PM`                                 | Whether the time is in the AM or PM, uppercase.                                  |
+| `{{ second }}`         | `%S`                     | `59`                                 | The second. Zero padded.                                                         |
+| `{{ clock }}`          | `%T`                     | `23:30:59`                           | Equivalent to `%H:%M:%S`.                                                        |
+| `{{ iana_nocolon }}`   | `%V`                     | `Asia/Tokyo`, `+0900`                | An IANA time zone identifier, or `%z` if one doesn't exist.                      |
+| `{{ iana_colon }}`     | `%:V`                    | `Asia/Tokyo`, `+09:00`               | An IANA time zone identifier, or `%:z` if one doesn't exist.                     |
+| `{{ year }}`           | `%Y`                     | `2024`                               | A full year, including century. Zero padded to 4 digits.                         |
+| `{{ year_2digit }}`    | `%y`                     | `24`                                 | A two-digit year. Represents only 1969-2068. Zero padded.                        |
+| `{{ tzabbrev }}`       | `%Z`                     | `JST`                                | A time zone abbreviation. Supported when formatting only.                        |
+| `{{ offset_nocolon }}` | `%z`                     | `+0900`                              | A time zone offset in the format `[+-]HHMM[SS]`.                                 |
+| `{{ offset_colon }}`   | `%:z`                    | `+09:00`                             | A time zone offset in the format `[+-]HH:MM[:SS]`.                               |
 
 See [`templates`](templates) for the default templates.
 

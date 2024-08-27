@@ -123,8 +123,7 @@ impl SlackMessage<Initialized<'_>> {
             .path_segments()
             .ok_or(anyhow!("Failed to get path segments"))?
             .nth(1)
-            .ok_or(anyhow!("Failed to get the last path segment"))?
-;
+            .ok_or(anyhow!("Failed to get the last path segment"))?;
         let ts = url
             .path_segments()
             .ok_or(anyhow!("Failed to get path segments"))?
