@@ -37,3 +37,11 @@ jiff = "0.1.10"
 
 # Templating
 tera = "1.20.0"
+
+[profile.dev]
+debug = 0
+
+[profile.release]
+lto = true
+codegen-units = 1
+panic = "abort"
