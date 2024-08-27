@@ -101,7 +101,14 @@ impl Cli<Uninitialized> {
     pub async fn new() -> Result<Cli<Initialized>> {
         let Uninitialized { token, quote, timezone, templates } = CliArgs::parse();
 
-        Ok(Cli { state: Initialized { token, quote, timezone, tera: Self::setup_tera(&templates).await? } })
+        Ok(Cli {
+            state: Initialized {
+                token,
+                quote,
+                timezone,
+                tera: Self::setup_tera(&templates).await?,
+            },
+        })
     }
 
     #[rustfmt::skip]
@@ -198,13 +205,13 @@ impl Cli<Initialized> {
             Offset,
             OffsetColon,
         ]
-            .iter()
-            .for_each(|key| {
-                context.insert(
-                    key.as_ref(),
-                    &datetime.strftime(key.get_str("format").unwrap()).to_string(),
-                )
-            });
+        .iter()
+        .for_each(|key| {
+            context.insert(
+                key.as_ref(),
+                &datetime.strftime(key.get_str("format").unwrap()).to_string(),
+            )
+        });
 
         Ok(context)
     }
