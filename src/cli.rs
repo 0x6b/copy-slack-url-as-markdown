@@ -6,11 +6,12 @@ use strum::EnumProperty;
 use tera::{Context, Tera};
 use tokio::fs::read_to_string;
 
-use crate::{
-    context_key::{ContextKey, ContextKey::*},
-    message::SlackMessage,
-    template_type::TemplateType::{RichText, RichTextQuote, Text, TextQuote},
+use crate::template::{
+    ContextKey,
+    ContextKey::*,
+    TemplateType::{RichText, RichTextQuote, Text, TextQuote},
 };
+use crate::slack_client::SlackMessage;
 
 const TEMPLATE_TEXT: &str = include_str!("../templates/text");
 const TEMPLATE_TEXT_QUOTE: &str = include_str!("../templates/text_quote");
@@ -144,8 +145,8 @@ impl Cli<Uninitialized> {
 
 impl Cli<Initialized> {
     pub async fn resolve(&self, url: &url::Url) -> Result<Cli<Resolved>> {
-        let message: SlackMessage<crate::message::Initialized> = SlackMessage::try_from(url)?;
-        let message: SlackMessage<crate::message::Resolved> = message.resolve(&self.token).await?;
+        let message: SlackMessage<crate::slack_client::message::Initialized> = SlackMessage::try_from(url)?;
+        let message: SlackMessage<crate::slack_client::message::Resolved> = message.resolve(&self.token).await?;
 
         Ok(Cli {
             state: Resolved {
@@ -156,7 +157,7 @@ impl Cli<Initialized> {
         })
     }
     async fn setup_context(
-        message: &SlackMessage<crate::message::Resolved<'_>>,
+        message: &SlackMessage<crate::slack_client::message::Resolved<'_>>,
         timezone: &str,
     ) -> Result<Context> {
         let mut context = Context::new();
