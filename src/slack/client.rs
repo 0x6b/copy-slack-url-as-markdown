@@ -3,7 +3,7 @@ use reqwest::header::{HeaderMap, HeaderValue, AUTHORIZATION, CONTENT_TYPE};
 use serde_json::from_str;
 use serde_qs::to_string;
 
-use crate::slack::query::{ConversationsQuery, Query, UsersQuery};
+use crate::slack::query::{conversations::ConversationsQuery, users::UsersQuery, Query};
 
 pub struct Client {
     endpoint: String,
