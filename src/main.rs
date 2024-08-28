@@ -5,10 +5,8 @@ use url::Url;
 use crate::cli::Cli;
 
 mod cli;
-mod context_key;
-mod message;
 mod slack_client;
-mod template_type;
+mod template;
 
 #[tokio::main]
 async fn main() -> Result<()> {
