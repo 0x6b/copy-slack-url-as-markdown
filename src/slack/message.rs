@@ -6,7 +6,7 @@ use url::Url;
 
 use crate::slack::{
     query::{ConversationsHistory, ConversationsInfo, ConversationsReplies},
-    Client,
+    Client, Emojify,
 };
 
 #[derive(Deserialize, Debug, Clone, Copy)]
@@ -117,7 +117,7 @@ impl SlackMessage<Initialized<'_>> {
             state: Resolved {
                 url: self.url,
                 channel_name,
-                body: body.into_iter().last().unwrap_or("".to_string()),
+                body: body.into_iter().last().unwrap_or("".to_string()).emojify(),
                 ts: self.ts.parse::<i64>()?,
             },
         })
