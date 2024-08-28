@@ -8,6 +8,9 @@ description = "Copy Slack URL as Markdown"
 name = "s2m"
 path = "src/main.rs"
 
+[workspace]
+members = ["xtask"]
+
 [dependencies]
 # Error handling
 anyhow = "1.0.86"
@@ -39,6 +42,7 @@ jiff = "0.1.10"
 tera = "1.20.0"
 strum = "0.26.3"
 strum_macros = "0.26.4"
+regex = "1.10.6"
 
 [profile.dev]
 debug = 0
