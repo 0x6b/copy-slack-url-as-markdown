@@ -2,10 +2,7 @@ use anyhow::Result;
 use reqwest::header::{HeaderMap, HeaderValue, AUTHORIZATION, CONTENT_TYPE};
 use serde_qs::to_string;
 
-use crate::slack_client::{
-    query::{History, Info, Query, Replies},
-    response::{Channel, Message},
-};
+use crate::slack::query::ConversationsQuery;
 
 pub struct Client {
     endpoint: String,
@@ -24,25 +21,17 @@ impl Client {
         Ok(Self { endpoint: "https://slack.com/api".into(), client })
     }
 
-    // https://api.slack.com/methods/conversations.info
-    pub async fn conversations_info(&self, query: &Info<'_>) -> Result<Channel> {
-        Ok(self.request::<Info>(query).await?.channel)
-    }
-
-    // https://api.slack.com/methods/conversations.history
-    pub async fn conversations_history(&self, query: &History<'_>) -> Result<Option<Vec<Message>>> {
-        Ok(self.request::<History>(query).await?.messages)
-    }
-
-    // https://api.slack.com/methods/conversations.replies
-    pub async fn conversations_replies(&self, query: &Replies<'_>) -> Result<Option<Vec<Message>>> {
-        Ok(self.request::<Replies>(query).await?.messages)
+    pub async fn conversations<T>(&self, query: &T) -> Result<T::Response>
+    where
+        T: ConversationsQuery,
+    {
+        self.request(query).await
     }
 
     // Helper method to make a request and deserialize the response into `T`
     async fn request<T>(&self, query: &T) -> Result<T::Response>
     where
-        T: Query,
+        T: ConversationsQuery,
     {
         let response = self
             .client
