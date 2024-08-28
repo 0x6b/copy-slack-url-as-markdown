@@ -39,7 +39,7 @@ where
 
 #[cfg(test)]
 mod tests {
-    use crate::slack::Emojify;
+    use crate::Emojify;
 
     #[test]
     fn test_emojify() {
