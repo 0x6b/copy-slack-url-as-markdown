@@ -20,10 +20,10 @@ use crate::{
     },
 };
 
-const TEMPLATE_TEXT: &str = include_str!("../templates/text");
-const TEMPLATE_TEXT_QUOTE: &str = include_str!("../templates/text_quote");
-const TEMPLATE_RICH_TEXT: &str = include_str!("../templates/rich_text");
-const TEMPLATE_RICH_TEXT_QUOTE: &str = include_str!("../templates/rich_text_quote");
+const TEMPLATE_TEXT: &str = include_str!("../assets/templates/text");
+const TEMPLATE_TEXT_QUOTE: &str = include_str!("../assets/templates/text_quote");
+const TEMPLATE_RICH_TEXT: &str = include_str!("../assets/templates/rich_text");
+const TEMPLATE_RICH_TEXT_QUOTE: &str = include_str!("../assets/templates/rich_text_quote");
 
 pub struct Copier<S>
 where

@@ -91,7 +91,7 @@ The pre-defined variables are below:
 | `{{ offset }}`         | `%z`                     | `+0900`                              | A time zone offset in the format `[+-]HHMM[SS]`.                                 |
 | `{{ offset_colon }}`   | `%:z`                    | `+09:00`                             | A time zone offset in the format `[+-]HH:MM[:SS]`.                               |
 
-See [`templates`](templates) for the default templates.
+See [`assets/templates`](assets/templates) for the default templates.
 
 ## License
 
