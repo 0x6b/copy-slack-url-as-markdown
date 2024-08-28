@@ -5,8 +5,11 @@ use serde::Deserialize;
 use url::Url;
 
 use crate::slack::{
-    query::{ConversationsHistory, ConversationsInfo, ConversationsReplies, UsersInfo},
-    response::Message,
+    query::{
+        conversations::{History, Info as ConversationsInfo, Replies},
+        users::Info as UsersInfo,
+    },
+    response::conversations::Message,
     Client, Emojify,
 };
 
@@ -79,7 +82,7 @@ impl SlackMessage<Initialized<'_>> {
             .name_normalized;
 
         let history = client
-            .conversations(&ConversationsHistory {
+            .conversations(&History {
                 channel: self.channel_id,
                 latest: self.ts64,
                 oldest: self.ts64,
@@ -102,7 +105,7 @@ impl SlackMessage<Initialized<'_>> {
                 // conversation.history will be blank. I'm not sure why. Try to
                 // fetch using conversation.replies
                 let messages = client
-                    .conversations(&ConversationsReplies {
+                    .conversations(&Replies {
                         channel: self.channel_id,
                         ts: self.thread_ts64.unwrap_or(self.ts64),
                         latest: self.ts64,
