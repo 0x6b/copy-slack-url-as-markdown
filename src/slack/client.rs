@@ -2,7 +2,7 @@ use anyhow::Result;
 use reqwest::header::{HeaderMap, HeaderValue, AUTHORIZATION, CONTENT_TYPE};
 use serde_qs::to_string;
 
-use crate::slack_client::{
+use crate::slack::{
     query::{History, Info, Query, Replies},
     response::{Channel, Message},
 };

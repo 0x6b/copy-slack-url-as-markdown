@@ -4,7 +4,7 @@ use anyhow::{anyhow, bail, Error, Result};
 use serde::Deserialize;
 use url::Url;
 
-use crate::slack_client::{
+use crate::slack::{
     query::{History, Info, Replies},
     Client,
 };

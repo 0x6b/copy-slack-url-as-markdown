@@ -1,7 +1,7 @@
 use serde::Serialize;
 
 pub trait Query: Serialize {
-    type Response: crate::slack_client::response::Response;
+    type Response: crate::slack::response::Response;
     fn path(&self) -> &'static str;
 }
 
@@ -11,7 +11,7 @@ pub struct Info<'a> {
 }
 
 impl<'a> Query for Info<'a> {
-    type Response = crate::slack_client::response::Info;
+    type Response = crate::slack::response::Info;
 
     fn path(&self) -> &'static str {
         "conversations.info"
@@ -28,7 +28,7 @@ pub struct History<'a> {
 }
 
 impl<'a> Query for History<'a> {
-    type Response = crate::slack_client::response::Conversations;
+    type Response = crate::slack::response::Conversations;
 
     fn path(&self) -> &'static str {
         "conversations.history"
@@ -46,7 +46,7 @@ pub struct Replies<'a> {
 }
 
 impl<'a> Query for Replies<'a> {
-    type Response = crate::slack_client::response::Conversations;
+    type Response = crate::slack::response::Conversations;
 
     fn path(&self) -> &'static str {
         "conversations.replies"
