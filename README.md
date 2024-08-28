@@ -65,6 +65,7 @@ The pre-defined variables are below:
 | Variable               | `strftime` Specifier     | Example                              | Description                                                                      |
 |------------------------|--------------------------|--------------------------------------|----------------------------------------------------------------------------------|
 | `{{ channel_name }}`   | (not available)          | `general`                            | The name of the channel the message belongs to.                                  |
+| `{{ user_name }}`      | (not available)          | `jake`                               | The name of the user who posted the message.                                     |
 | `{{ url }}`            | (not available)          | `https://xxx.slack.com/archives/...` | The Slack URL of the message.                                                    |
 | `{{ text }}`           | (not available)          | `Hello, world!`                      | The text of the message, which is the vector of the texts split by the new line. |
 | `{{ timestamp }}`      | `%Y-%m-%d %H:%M:%S (%Z)` | `2024-08-27 16:27:44 (JST)`          | The timestamp of the message.                                                    |
