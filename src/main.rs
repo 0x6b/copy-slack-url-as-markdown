@@ -1,24 +1,17 @@
-use anyhow::Result;
-use arboard::Clipboard;
-use url::Url;
-
 use crate::cli::Cli;
 
 mod cli;
-mod slack_client;
+mod slack;
 mod template;
 
 #[tokio::main]
-async fn main() -> Result<()> {
+async fn main() -> anyhow::Result<()> {
     let cli = Cli::new().await?;
 
-    let mut clipboard = Clipboard::new()?;
-    let content = clipboard.get_text()?;
-    let url = Url::parse(content.trim())?;
+    let mut clipboard = arboard::Clipboard::new()?;
+    let resolved = cli.resolve(&url::Url::parse(clipboard.get_text()?.trim())?).await?;
 
-    let resolved = cli.resolve(&url).await?;
     let (rich_text, text) = resolved.render()?;
-
     match clipboard.set_html(rich_text.trim(), Some(text.trim())) {
         Ok(_) => println!("{text}"),
         Err(why) => println!("{why}"),
