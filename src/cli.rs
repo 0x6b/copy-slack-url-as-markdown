@@ -160,6 +160,7 @@ impl Cli<Initialized> {
             },
         })
     }
+
     async fn setup_context(
         message: &SlackMessage<crate::slack::message::Resolved<'_>>,
         timezone: &str,
@@ -168,6 +169,7 @@ impl Cli<Initialized> {
         let datetime = jiff::Timestamp::from_microsecond(message.ts)?.intz(timezone)?;
 
         context.insert(ChannelName.as_ref(), &message.channel_name);
+        context.insert(UserName.as_ref(), &message.user_name);
         context.insert(Url.as_ref(), &message.url.as_str());
         context.insert(
             ContextKey::Text.as_ref(),

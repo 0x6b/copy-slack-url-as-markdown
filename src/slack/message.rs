@@ -5,7 +5,8 @@ use serde::Deserialize;
 use url::Url;
 
 use crate::slack::{
-    query::{ConversationsHistory, ConversationsInfo, ConversationsReplies},
+    query::{ConversationsHistory, ConversationsInfo, ConversationsReplies, UsersInfo},
+    response::Message,
     Client, Emojify,
 };
 
@@ -30,6 +31,7 @@ impl<'a> State for Initialized<'a> {}
 pub struct Resolved<'a> {
     pub url: &'a Url,
     pub channel_name: String,
+    pub user_name: String,
     pub body: String,
     pub ts: i64,
 }
@@ -69,11 +71,13 @@ impl<'a> TryFrom<&'a Url> for SlackMessage<Initialized<'a>> {
 impl SlackMessage<Initialized<'_>> {
     pub async fn resolve(&self, token: &str) -> Result<SlackMessage<Resolved>> {
         let client = Client::new(token)?;
+
         let channel_name = client
             .conversations::<_>(&ConversationsInfo { channel: self.channel_id })
             .await?
             .channel
             .name_normalized;
+
         let history = client
             .conversations(&ConversationsHistory {
                 channel: self.channel_id,
@@ -84,39 +88,51 @@ impl SlackMessage<Initialized<'_>> {
             })
             .await?
             .messages;
-        let mut body = match history {
-            Some(messages) => messages.into_iter().filter_map(|m| m.text).collect::<Vec<String>>(),
+
+        let get_id_and_body = |messages: Vec<Message>| {
+            let user = messages.last().unwrap().user.clone();
+            let messages = messages.into_iter().filter_map(|m| m.text).collect::<Vec<String>>();
+            (user, messages)
+        };
+
+        let (id, body) = match history {
+            Some(messages) if !messages.is_empty() => get_id_and_body(messages),
+            Some(_) => {
+                // If the message didn't send to the main channel, the response of the
+                // conversation.history will be blank. I'm not sure why. Try to
+                // fetch using conversation.replies
+                let messages = client
+                    .conversations(&ConversationsReplies {
+                        channel: self.channel_id,
+                        ts: self.thread_ts64.unwrap_or(self.ts64),
+                        latest: self.ts64,
+                        oldest: self.ts64,
+                        limit: 1,
+                        inclusive: true,
+                    })
+                    .await?
+                    .messages;
+                match messages {
+                    Some(messages) => get_id_and_body(messages),
+                    None => bail!("No messages found"),
+                }
+            }
             None => {
                 bail!("No messages found")
             }
         };
 
-        // If the message didn't send to the main channel, the response of the conversation.history
-        // will be blank. I'm not sure why. Try to fetch using conversation.replies
-        if body.join("").is_empty() {
-            let replies = client
-                .conversations(&ConversationsReplies {
-                    channel: self.channel_id,
-                    ts: self.thread_ts64.unwrap_or(self.ts64),
-                    latest: self.ts64,
-                    oldest: self.ts64,
-                    limit: 1,
-                    inclusive: true,
-                })
-                .await?
-                .messages;
-            body = match replies {
-                Some(replies) => {
-                    replies.into_iter().filter_map(|m| m.text).collect::<Vec<String>>()
-                }
-                None => bail!("No messages found"),
-            }
-        }
+        let user = client.users(&UsersInfo { id: &id }).await?.user;
 
         Ok(SlackMessage {
             state: Resolved {
                 url: self.url,
                 channel_name,
+                user_name: if user.profile.display_name.is_empty() {
+                    user.name
+                } else {
+                    user.profile.display_name
+                },
                 body: body.into_iter().last().unwrap_or("".to_string()).emojify(),
                 ts: self.ts.parse::<i64>()?,
             },

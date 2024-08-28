@@ -3,7 +3,7 @@ use reqwest::header::{HeaderMap, HeaderValue, AUTHORIZATION, CONTENT_TYPE};
 use serde_json::from_str;
 use serde_qs::to_string;
 
-use crate::slack::query::ConversationsQuery;
+use crate::slack::query::{ConversationsQuery, Query, UsersQuery};
 
 pub struct Client {
     endpoint: String,
@@ -22,6 +22,15 @@ impl Client {
         Ok(Self { endpoint: "https://slack.com/api".into(), client })
     }
 
+    /// https://api.slack.com/methods/users.* API
+    pub async fn users<T>(&self, query: &T) -> Result<T::Response>
+    where
+        T: UsersQuery,
+    {
+        self.request(query).await
+    }
+
+    /// https://api.slack.com/methods/conversations.* API
     pub async fn conversations<T>(&self, query: &T) -> Result<T::Response>
     where
         T: ConversationsQuery,
@@ -29,10 +38,11 @@ impl Client {
         self.request(query).await
     }
 
-    // Helper method to make a request and deserialize the response into `T`
+    // Helper method to make a request with query `T`, and deserialize the response into
+    // `T::Response`
     async fn request<T>(&self, query: &T) -> Result<T::Response>
     where
-        T: ConversationsQuery,
+        T: Query,
     {
         let text = self
             .client

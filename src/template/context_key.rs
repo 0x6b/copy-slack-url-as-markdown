@@ -13,6 +13,15 @@ pub enum ContextKey {
     ChannelName,
 
     #[strum(
+        serialize = "user_name",
+        props(
+            description = "The name of the user who posted the message.",
+            example = "jake"
+        )
+    )]
+    UserName,
+
+    #[strum(
         serialize = "url",
         props(
             description = "The Slack URL of the message.",
