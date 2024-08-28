@@ -1,1 +1,1 @@
-<p><a href="{{ url }}">Slack#{{ channel_name }}</a></p>
+<p>From <strong>@{{ user_name }}</strong> in <a href="{{ url }}">Slack#{{ channel_name }}</a></p>
