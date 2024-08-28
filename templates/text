@@ -1,1 +1,1 @@
-[Slack#{{ channel_name }}]({{ url }}) at {{ timestamp }}
+[Slack#{{ channel_name }}]({{ url }})
