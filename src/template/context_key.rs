@@ -232,7 +232,7 @@ mod tests {
     use anyhow::Result;
     use strum::{EnumProperty, VariantArray};
 
-    use crate::context_key::{ContextKey, ContextKey::*};
+    use crate::template::{ContextKey, ContextKey::*};
 
     #[test]
     fn test_format() -> Result<()> {
