@@ -1,16 +1,14 @@
-mod state;
-
 use std::{ops::Deref, path::PathBuf};
 
 use anyhow::Result;
 use clap::Parser;
+use slack_client::SlackMessage;
 use strum::EnumProperty;
 use tera::{Context, Tera};
 use tokio::fs::read_to_string;
 
 use crate::{
-    copier::state::{CliArgs, Initialized, Resolved, State, Templates, Uninitialized},
-    slack::SlackMessage,
+    state::{CliArgs, Initialized, Resolved, State, Templates, Uninitialized},
     template::{
         ContextKey,
         ContextKey::{
@@ -22,10 +20,10 @@ use crate::{
     },
 };
 
-const TEMPLATE_TEXT: &str = include_str!("../../templates/text");
-const TEMPLATE_TEXT_QUOTE: &str = include_str!("../../templates/text_quote");
-const TEMPLATE_RICH_TEXT: &str = include_str!("../../templates/rich_text");
-const TEMPLATE_RICH_TEXT_QUOTE: &str = include_str!("../../templates/rich_text_quote");
+const TEMPLATE_TEXT: &str = include_str!("../templates/text");
+const TEMPLATE_TEXT_QUOTE: &str = include_str!("../templates/text_quote");
+const TEMPLATE_RICH_TEXT: &str = include_str!("../templates/rich_text");
+const TEMPLATE_RICH_TEXT_QUOTE: &str = include_str!("../templates/rich_text_quote");
 
 pub struct Copier<S>
 where
@@ -46,7 +44,7 @@ where
 }
 
 impl Copier<Uninitialized> {
-    pub async fn new() -> anyhow::Result<Copier<Initialized>> {
+    pub async fn new() -> Result<Copier<Initialized>> {
         let Uninitialized { token, quote, timezone, templates } = CliArgs::parse();
 
         Ok(Copier {
@@ -60,7 +58,7 @@ impl Copier<Uninitialized> {
     }
 
     #[rustfmt::skip]
-    async fn setup_tera(arg: &Templates) -> anyhow::Result<Tera> {
+    async fn setup_tera(arg: &Templates) -> Result<Tera> {
         let mut tera = Tera::default();
 
         for (name, pathlike, default) in [
@@ -91,10 +89,10 @@ impl Copier<Uninitialized> {
 }
 
 impl Copier<Initialized> {
-    pub async fn resolve(&self, url: &url::Url) -> anyhow::Result<Copier<Resolved>> {
-        let message: SlackMessage<crate::slack::message::Initialized> =
+    pub async fn resolve(&self, url: &url::Url) -> Result<Copier<Resolved>> {
+        let message: SlackMessage<slack_client::message::Initialized> =
             SlackMessage::try_from(url)?;
-        let message: SlackMessage<crate::slack::message::Resolved> =
+        let message: SlackMessage<slack_client::message::Resolved> =
             message.resolve(&self.token).await?;
 
         Ok(Copier {
@@ -107,9 +105,9 @@ impl Copier<Initialized> {
     }
 
     async fn setup_context(
-        message: &SlackMessage<crate::slack::message::Resolved<'_>>,
+        message: &SlackMessage<slack_client::message::Resolved<'_>>,
         timezone: &str,
-    ) -> anyhow::Result<Context> {
+    ) -> Result<Context> {
         let mut context = Context::new();
         let datetime = jiff::Timestamp::from_microsecond(message.ts)?.intz(timezone)?;
 

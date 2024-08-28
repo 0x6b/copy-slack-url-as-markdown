@@ -1,7 +1,7 @@
 use crate::copier::Copier;
 
 mod copier;
-mod slack;
+mod state;
 mod template;
 
 #[tokio::main]

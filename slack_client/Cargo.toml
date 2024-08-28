@@ -1,0 +1,27 @@
+[package]
+name = "slack_client"
+version = "0.1.0"
+edition = "2021"
+description = "Simple Slack API client"
+
+[lib]
+name = "slack_client"
+path = "src/lib.rs"
+
+[dependencies]
+# Error handling
+anyhow = "1.0.86"
+
+# Regex
+regex = "1.10.6"
+
+# HTTP Client
+reqwest = { version = "0.12.7", default-features = false, features = ["rustls-tls"] }
+
+# Ser/de
+serde = { version = "1.0.209", features = ["derive"] }
+serde_json = "1.0.127"
+serde_qs = "0.13.0"
+
+# URL parsing
+url = "2.5.2"
