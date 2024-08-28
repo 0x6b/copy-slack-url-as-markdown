@@ -33,13 +33,15 @@ impl Client {
     where
         T: ConversationsQuery,
     {
-        let response = self
+        let text = self
             .client
             .get(&format!("{}/{}?{}", self.endpoint, query.path(), to_string(query)?))
             .send()
             .await?
-            .json::<T::Response>()
+            .text()
             .await?;
+        // println!("Response: {:?}", text);
+        let response = from_str::<T::Response>(&text)?;
 
         Ok(response)
     }
