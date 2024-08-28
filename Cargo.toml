@@ -30,7 +30,7 @@ serde_qs = "0.13.0"
 url = "2.5.2"
 
 # HTTP Client
-reqwest = { version = "0.12.7", default-features = false, features = ["json", "rustls-tls"] }
+reqwest = { version = "0.12.7", default-features = false, features = ["rustls-tls"] }
 
 # Async runtime
 tokio = { version = "1.39.3", features = ["rt", "macros", "net", "rt-multi-thread", "fs"] }
