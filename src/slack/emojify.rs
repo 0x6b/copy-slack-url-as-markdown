@@ -13,7 +13,10 @@ pub trait Emojify {
     fn emojify(&self) -> String;
 }
 
-impl<T> Emojify for T where T: AsRef<str> {
+impl<T> Emojify for T
+where
+    T: AsRef<str>,
+{
     fn emojify(&self) -> String {
         let s = self.as_ref();
         let mut new_text = String::with_capacity(s.len());
