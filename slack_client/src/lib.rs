@@ -1,6 +1,7 @@
 mod client;
 mod emojify;
 pub mod message;
+
 mod query;
 mod response;
 

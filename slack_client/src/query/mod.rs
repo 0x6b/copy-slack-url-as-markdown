@@ -3,7 +3,7 @@ pub mod users;
 
 use serde::Serialize;
 
-use crate::slack::response::Response;
+use crate::response::Response;
 
 /// A trait for a query to the Slack API, which defines the path to the endpoint and the response
 /// type as its associated type.
