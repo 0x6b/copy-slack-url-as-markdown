@@ -5,11 +5,11 @@ use serde::{de::DeserializeOwned, Deserialize};
 pub trait Response: DeserializeOwned {}
 
 #[derive(Deserialize)]
-pub struct Info {
+pub struct ConversationsInfo {
     pub channel: Channel,
 }
 
-impl Response for Info {}
+impl Response for ConversationsInfo {}
 
 #[derive(Deserialize)]
 pub struct Channel {
@@ -25,5 +25,24 @@ impl Response for Conversations {}
 
 #[derive(Deserialize, Debug)]
 pub struct Message {
+    pub user: String,
     pub text: Option<String>,
+}
+
+#[derive(Deserialize, Debug)]
+pub struct UsersInfo {
+    pub user: User,
+}
+
+impl Response for UsersInfo {}
+
+#[derive(Deserialize, Debug)]
+pub struct User {
+    pub name: String,
+    pub profile: Profile,
+}
+
+#[derive(Deserialize, Debug)]
+pub struct Profile {
+    pub display_name: String,
 }
