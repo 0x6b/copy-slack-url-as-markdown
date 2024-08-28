@@ -1,16 +1,17 @@
 use serde::Serialize;
 
-pub trait Query: Serialize {
+pub trait ConversationsQuery: Serialize {
     type Response: crate::slack::response::Response;
     fn path(&self) -> &'static str;
 }
 
+// https://api.slack.com/methods/conversations.info
 #[derive(Serialize)]
-pub struct Info<'a> {
+pub struct ConversationsInfo<'a> {
     pub channel: &'a str,
 }
 
-impl<'a> Query for Info<'a> {
+impl<'a> ConversationsQuery for ConversationsInfo<'a> {
     type Response = crate::slack::response::Info;
 
     fn path(&self) -> &'static str {
@@ -18,8 +19,9 @@ impl<'a> Query for Info<'a> {
     }
 }
 
+// https://api.slack.com/methods/conversations.history
 #[derive(Serialize)]
-pub struct History<'a> {
+pub struct ConversationsHistory<'a> {
     pub channel: &'a str,
     pub latest: f64,
     pub oldest: f64,
@@ -27,7 +29,7 @@ pub struct History<'a> {
     pub inclusive: bool,
 }
 
-impl<'a> Query for History<'a> {
+impl<'a> ConversationsQuery for ConversationsHistory<'a> {
     type Response = crate::slack::response::Conversations;
 
     fn path(&self) -> &'static str {
@@ -35,8 +37,9 @@ impl<'a> Query for History<'a> {
     }
 }
 
+// https://api.slack.com/methods/conversations.replies
 #[derive(Serialize)]
-pub struct Replies<'a> {
+pub struct ConversationsReplies<'a> {
     pub channel: &'a str,
     pub ts: f64,
     pub latest: f64,
@@ -45,7 +48,7 @@ pub struct Replies<'a> {
     pub inclusive: bool,
 }
 
-impl<'a> Query for Replies<'a> {
+impl<'a> ConversationsQuery for ConversationsReplies<'a> {
     type Response = crate::slack::response::Conversations;
 
     fn path(&self) -> &'static str {

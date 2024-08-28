@@ -5,7 +5,7 @@ use serde::Deserialize;
 use url::Url;
 
 use crate::slack::{
-    query::{History, Info, Replies},
+    query::{ConversationsHistory, ConversationsInfo, ConversationsReplies},
     Client,
 };
 
@@ -70,18 +70,20 @@ impl SlackMessage<Initialized<'_>> {
     pub async fn resolve(&self, token: &str) -> Result<SlackMessage<Resolved>> {
         let client = Client::new(token)?;
         let channel_name = client
-            .conversations_info(&Info { channel: self.channel_id })
+            .conversations::<_>(&ConversationsInfo { channel: self.channel_id })
             .await?
+            .channel
             .name_normalized;
         let history = client
-            .conversations_history(&History {
+            .conversations(&ConversationsHistory {
                 channel: self.channel_id,
                 latest: self.ts64,
                 oldest: self.ts64,
                 limit: 1,
                 inclusive: true,
             })
-            .await?;
+            .await?
+            .messages;
         let mut body = match history {
             Some(messages) => messages.into_iter().filter_map(|m| m.text).collect::<Vec<String>>(),
             None => {
@@ -93,7 +95,7 @@ impl SlackMessage<Initialized<'_>> {
         // will be blank. I'm not sure why. Try to fetch using conversation.replies
         if body.join("").is_empty() {
             let replies = client
-                .conversations_replies(&Replies {
+                .conversations(&ConversationsReplies {
                     channel: self.channel_id,
                     ts: self.thread_ts64.unwrap_or(self.ts64),
                     latest: self.ts64,
@@ -101,7 +103,8 @@ impl SlackMessage<Initialized<'_>> {
                     limit: 1,
                     inclusive: true,
                 })
-                .await?;
+                .await?
+                .messages;
             body = match replies {
                 Some(replies) => {
                     replies.into_iter().filter_map(|m| m.text).collect::<Vec<String>>()
