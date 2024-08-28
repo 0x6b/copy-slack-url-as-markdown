@@ -1,1 +1,1 @@
-[Slack#{{ channel_name }}]({{ url }})
+From @{{ user_name }} in [Slack#{{ channel_name }}]({{ url }})
