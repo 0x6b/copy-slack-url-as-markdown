@@ -1,6 +1,6 @@
 use serde::Serialize;
 
-use crate::slack::{query::Query, response::users::UsersInfo};
+use crate::{query::Query, response::users::UsersInfo};
 
 /// A marker trait which denotes a query for the `users` API.
 pub trait UsersQuery: Query {}

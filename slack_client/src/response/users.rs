@@ -1,6 +1,6 @@
 use serde::Deserialize;
 
-use crate::slack::response::Response;
+use crate::response::Response;
 
 #[derive(Deserialize, Debug)]
 pub struct UsersInfo {

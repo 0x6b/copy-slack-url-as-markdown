@@ -1,6 +1,6 @@
 use serde::Serialize;
 
-use crate::slack::{
+use crate::{
     query::Query,
     response::conversations::{Conversations, ConversationsInfo},
 };

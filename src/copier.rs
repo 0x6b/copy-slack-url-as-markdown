@@ -2,15 +2,20 @@ use std::{ops::Deref, path::PathBuf};
 
 use anyhow::Result;
 use clap::Parser;
+use slack_client::SlackMessage;
 use strum::EnumProperty;
 use tera::{Context, Tera};
 use tokio::fs::read_to_string;
 
 use crate::{
-    slack::SlackMessage,
+    state::{CliArgs, Initialized, Resolved, State, Templates, Uninitialized},
     template::{
         ContextKey,
-        ContextKey::*,
+        ContextKey::{
+            AmPm, AmPmLower, ChannelName, Clock, Day, DaySpace, Hour12, Hour24, IsoDate, Minute,
+            Month, Month2Digit, MonthAbbrev, Offset, OffsetColon, Second, Timestamp, TzAbbrev,
+            TzIana, Url, UserName, Weekday, WeekdayAbbrev, Year, Year2Digit,
+        },
         TemplateType::{RichText, RichTextQuote, Text, TextQuote},
     },
 };
@@ -20,76 +25,14 @@ const TEMPLATE_TEXT_QUOTE: &str = include_str!("../templates/text_quote");
 const TEMPLATE_RICH_TEXT: &str = include_str!("../templates/rich_text");
 const TEMPLATE_RICH_TEXT_QUOTE: &str = include_str!("../templates/rich_text_quote");
 
-pub trait State {}
-impl State for Uninitialized {}
-impl State for Initialized {}
-impl State for Resolved {}
-
-pub type CliArgs = Uninitialized;
-
-#[derive(Parser)]
-#[clap(version, author, about)]
-pub struct Uninitialized {
-    /// Slack API token.
-    #[arg(long, env = "SLACK_TOKEN")]
-    pub token: String,
-
-    /// Include the message body as a quote.
-    #[arg(short, long)]
-    pub quote: bool,
-
-    /// The IANA time zone database identifiers to use for the timestamp.
-    #[arg(short, long, default_value = "Asia/Tokyo")]
-    pub timezone: String,
-
-    #[command(flatten)]
-    pub templates: Templates,
-}
-
-#[derive(Parser)]
-pub struct Templates {
-    /// Path to the template file or a string for plain text (without quote). Leave empty to use
-    /// the default.
-    #[arg(long, env = "TEMPLATE_TEXT")]
-    pub text: Option<String>,
-
-    /// Path to the template file or a string for plain text (with quote). Leave empty to use the
-    /// default.
-    #[arg(long, env = "TEMPLATE_TEXT_QUOTE")]
-    pub text_quote: Option<String>,
-
-    /// Path to the template file or a string for rich text (without quote). Leave empty to use the
-    /// default.
-    #[arg(long, env = "TEMPLATE_RICH_TEXT")]
-    pub rich_text: Option<String>,
-
-    /// Path to the template file or a string for rich text (with quote). Leave empty to use the
-    /// template.
-    #[arg(long, env = "TEMPLATE_RICH_TEXT_QUOTE")]
-    pub rich_text_quote: Option<String>,
-}
-
-pub struct Initialized {
-    pub token: String,
-    pub quote: bool,
-    pub timezone: String,
-    pub tera: Tera,
-}
-
-pub struct Resolved {
-    pub quote: bool,
-    pub tera: Tera,
-    pub context: Context,
-}
-
-pub struct Cli<S>
+pub struct Copier<S>
 where
     S: State,
 {
     state: S,
 }
 
-impl<S> Deref for Cli<S>
+impl<S> Deref for Copier<S>
 where
     S: State,
 {
@@ -100,11 +43,11 @@ where
     }
 }
 
-impl Cli<Uninitialized> {
-    pub async fn new() -> Result<Cli<Initialized>> {
+impl Copier<Uninitialized> {
+    pub async fn new() -> Result<Copier<Initialized>> {
         let Uninitialized { token, quote, timezone, templates } = CliArgs::parse();
 
-        Ok(Cli {
+        Ok(Copier {
             state: Initialized {
                 token,
                 quote,
@@ -145,14 +88,14 @@ impl Cli<Uninitialized> {
     }
 }
 
-impl Cli<Initialized> {
-    pub async fn resolve(&self, url: &url::Url) -> Result<Cli<Resolved>> {
-        let message: SlackMessage<crate::slack::message::Initialized> =
+impl Copier<Initialized> {
+    pub async fn resolve(&self, url: &url::Url) -> Result<Copier<Resolved>> {
+        let message: SlackMessage<slack_client::message::Initialized> =
             SlackMessage::try_from(url)?;
-        let message: SlackMessage<crate::slack::message::Resolved> =
+        let message: SlackMessage<slack_client::message::Resolved> =
             message.resolve(&self.token).await?;
 
-        Ok(Cli {
+        Ok(Copier {
             state: Resolved {
                 quote: self.quote,
                 tera: self.tera.clone(),
@@ -162,7 +105,7 @@ impl Cli<Initialized> {
     }
 
     async fn setup_context(
-        message: &SlackMessage<crate::slack::message::Resolved<'_>>,
+        message: &SlackMessage<slack_client::message::Resolved<'_>>,
         timezone: &str,
     ) -> Result<Context> {
         let mut context = Context::new();
@@ -217,7 +160,7 @@ impl Cli<Initialized> {
     }
 }
 
-impl Cli<Resolved> {
+impl Copier<Resolved> {
     pub fn render(&self) -> Result<(String, String)> {
         let (rich_text, text) = if self.quote {
             (
