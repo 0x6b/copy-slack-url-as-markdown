@@ -51,45 +51,45 @@ Options:
 
 ### Templates
 
-You can customize the output format by providing a path to the template file or a string via the options, or respective environment variables. The template file is a plain text file that contains the format of the output message. Leave empty to use the default. Under the hood, this program uses the [tera](https://tera.netlify.app/) template engine, allowing you to take full advantage of its capabilities.
+You can customize the output format by providing a path to the template file or a string via the options, or respective environment variables. The template file is a plain text file that contains the format of the output message. Leave empty to use the default. Under the hood, this program uses the [Tera](https://keats.github.io/tera/) template engine, allowing you to take full advantage of its capabilities.
 
-| Option              | Environment Variable       | For                         |
-|---------------------|----------------------------|-----------------------------|
-| `--text`            | `TEMPLATE_TEXT`            | plain text (without quote). |
-| `--text-quote`      | `TEMPLATE_TEXT_QUOTE`      | plain text (with quote).    |
-| `--rich-text`       | `TEMPLATE_RICH_TEXT`       | rich text (without quote).  |
-| `--rich-text-quote` | `TEMPLATE_RICH_TEXT_QUOTE` | rich text (with quote).     |
+| Option              | Environment Variable       | For                       |
+|---------------------|----------------------------|---------------------------|
+| `--text`            | `TEMPLATE_TEXT`            | plain text, without quote |
+| `--text-quote`      | `TEMPLATE_TEXT_QUOTE`      | plain text, with quote    |
+| `--rich-text`       | `TEMPLATE_RICH_TEXT`       | rich text, without quote  |
+| `--rich-text-quote` | `TEMPLATE_RICH_TEXT_QUOTE` | rich text, with quote     |
 
-The pre-defined variables are below:
+The pre-defined variables, which you can use in the template i.e., `{{ variable }}`, are below:
 
-| Variable               | `strftime` Specifier     | Example                              | Description                                                                      |
-|------------------------|--------------------------|--------------------------------------|----------------------------------------------------------------------------------|
-| `{{ channel_name }}`   | (not available)          | `general`                            | The name of the channel the message belongs to.                                  |
-| `{{ user_name }}`      | (not available)          | `jake`                               | The name of the user who posted the message.                                     |
-| `{{ url }}`            | (not available)          | `https://xxx.slack.com/archives/...` | The Slack URL of the message.                                                    |
-| `{{ text }}`           | (not available)          | `Hello, world!`                      | The text of the message, which is the vector of the texts split by the new line. |
-| `{{ timestamp }}`      | `%Y-%m-%d %H:%M:%S (%Z)` | `2024-08-27 16:27:44 (JST)`          | The timestamp of the message.                                                    |
-| `{{ iso_date }}`       | `%F`                     | `2024-08-27`                         | Equivalent to `%Y-%m-%d`.                                                        |
-| `{{ clock }}`          | `%T`                     | `16:27:44`                           | Equivalent to `%H:%M:%S`.                                                        |
-| `{{ year }}`           | `%Y`                     | `2024`                               | A full year, including century. Zero padded to 4 digits.                         |
-| `{{ year_2digit }}`    | `%y`                     | `24`                                 | A two-digit year. Represents only 1969-2068. Zero padded.                        |
-| `{{ month }}`          | `%B`                     | `August`                             | The full month name.                                                             |
-| `{{ month_abbrev }}`   | `%b`                     | `Aug`                                | The abbreviated month name,.                                                     |
-| `{{ month_2digit }}`   | `%m`                     | `08`                                 | The month. Zero padded.                                                          |
-| `{{ day }}`            | `%d`                     | `27`                                 | The day of the month. Zero-padded.                                               |
-| `{{ day_space }}`      | `%e`                     | `27`                                 | The day of the month. Space padded.                                              |
-| `{{ hour24 }}`         | `%H`                     | `16`                                 | The hour in a 24 hour clock. Zero padded.                                        |
-| `{{ hour12 }}`         | `%I`                     | `04`                                 | The hour in a 12 hour clock. Zero padded.                                        |
-| `{{ minute }}`         | `%M`                     | `27`                                 | The minute. Zero padded.                                                         |
-| `{{ second }}`         | `%S`                     | `44`                                 | The second. Zero padded.                                                         |
-| `{{ ampm }}`           | `%p`                     | `PM`                                 | Whether the time is in the AM or PM, uppercase.                                  |
-| `{{ ampm_lower }}`     | `%P`                     | `pm`                                 | Whether the time is in the AM or PM, lowercase.                                  |
-| `{{ weekday }}`        | `%A`                     | `Tuesday`                            | The full weekday.                                                                |
-| `{{ weekday_abbrev }}` | `%a`                     | `Tue`                                | The abbreviated weekday.                                                         |
-| `{{ tz_iana }}`        | `%V`                     | `Asia/Tokyo`                         | An IANA time zone identifier, or `%z` if one doesn't exist.                      |
-| `{{ tz_abbrev }}`      | `%Z`                     | `JST`                                | A time zone abbreviation. Supported when formatting only.                        |
-| `{{ offset }}`         | `%z`                     | `+0900`                              | A time zone offset in the format `[+-]HHMM[SS]`.                                 |
-| `{{ offset_colon }}`   | `%:z`                    | `+09:00`                             | A time zone offset in the format `[+-]HH:MM[:SS]`.                               |
+| Variable           | [`jiff:fmt::strftime`](https://docs.rs/jiff/latest/jiff/fmt/strtime/) Specifier | Example                              | Description                                                                      |
+|--------------------|---------------------------------------------------------------------------------|--------------------------------------|----------------------------------------------------------------------------------|
+| ` channel_name `   | (not available)                                                                 | `general`                            | The name of the channel the message belongs to.                                  |
+| ` user_name `      | (not available)                                                                 | `jake`                               | The name of the user who posted the message.                                     |
+| ` url `            | (not available)                                                                 | `https://xxx.slack.com/archives/...` | The Slack URL of the message.                                                    |
+| ` text `           | (not available)                                                                 | `Hello, world!`                      | The text of the message, which is the vector of the texts split by the new line. |
+| ` timestamp `      | `%Y-%m-%d %H:%M:%S (%Z)`                                                        | `2024-08-27 16:27:44 (JST)`          | The timestamp of the message.                                                    |
+| ` iso_date `       | `%F`                                                                            | `2024-08-27`                         | Equivalent to `%Y-%m-%d`.                                                        |
+| ` clock `          | `%T`                                                                            | `16:27:44`                           | Equivalent to `%H:%M:%S`.                                                        |
+| ` year `           | `%Y`                                                                            | `2024`                               | A full year, including century. Zero padded to 4 digits.                         |
+| ` year_2digit `    | `%y`                                                                            | `24`                                 | A two-digit year. Represents only 1969-2068. Zero padded.                        |
+| ` month `          | `%B`                                                                            | `August`                             | The full month name.                                                             |
+| ` month_abbrev `   | `%b`                                                                            | `Aug`                                | The abbreviated month name,.                                                     |
+| ` month_2digit `   | `%m`                                                                            | `08`                                 | The month. Zero padded.                                                          |
+| ` day `            | `%d`                                                                            | `27`                                 | The day of the month. Zero-padded.                                               |
+| ` day_space `      | `%e`                                                                            | `27`                                 | The day of the month. Space padded.                                              |
+| ` hour24 `         | `%H`                                                                            | `16`                                 | The hour in a 24 hour clock. Zero padded.                                        |
+| ` hour12 `         | `%I`                                                                            | `04`                                 | The hour in a 12 hour clock. Zero padded.                                        |
+| ` minute `         | `%M`                                                                            | `27`                                 | The minute. Zero padded.                                                         |
+| ` second `         | `%S`                                                                            | `44`                                 | The second. Zero padded.                                                         |
+| ` ampm `           | `%p`                                                                            | `PM`                                 | Whether the time is in the AM or PM, uppercase.                                  |
+| ` ampm_lower `     | `%P`                                                                            | `pm`                                 | Whether the time is in the AM or PM, lowercase.                                  |
+| ` weekday `        | `%A`                                                                            | `Tuesday`                            | The full weekday.                                                                |
+| ` weekday_abbrev ` | `%a`                                                                            | `Tue`                                | The abbreviated weekday.                                                         |
+| ` tz_iana `        | `%V`                                                                            | `Asia/Tokyo`                         | An IANA time zone identifier, or `%z` if one doesn't exist.                      |
+| ` tz_abbrev `      | `%Z`                                                                            | `JST`                                | A time zone abbreviation. Supported when formatting only.                        |
+| ` offset `         | `%z`                                                                            | `+0900`                              | A time zone offset in the format `[+-]HHMM[SS]`.                                 |
+| ` offset_colon `   | `%:z`                                                                           | `+09:00`                             | A time zone offset in the format `[+-]HH:MM[:SS]`.                               |
 
 See [`assets/templates`](assets/templates) for the default templates.
 
