@@ -13,34 +13,25 @@ pub trait Emojify {
     fn emojify(&self) -> String;
 }
 
-impl Emojify for &str {
+impl<T> Emojify for T where T: AsRef<str> {
     fn emojify(&self) -> String {
-        emojify(self)
-    }
-}
+        let s = self.as_ref();
+        let mut new_text = String::with_capacity(s.len());
+        let mut last = 0;
 
-impl Emojify for String {
-    fn emojify(&self) -> String {
-        emojify(&self)
-    }
-}
-
-fn emojify(s: &str) -> String {
-    let mut new_text = String::with_capacity(s.len());
-    let mut last = 0;
-
-    for cap in RE.captures_iter(s) {
-        if let Some(m) = cap.get(0) {
-            if let Some(emoji) = TABLE.get(m.as_str()) {
-                new_text.push_str(&s[last..m.start()]);
-                new_text.push_str(emoji);
-                last = m.end();
+        for cap in RE.captures_iter(s) {
+            if let Some(m) = cap.get(0) {
+                if let Some(emoji) = TABLE.get(m.as_str()) {
+                    new_text.push_str(&s[last..m.start()]);
+                    new_text.push_str(emoji);
+                    last = m.end();
+                }
             }
         }
-    }
 
-    new_text.push_str(&s[last..]);
-    new_text
+        new_text.push_str(&s[last..]);
+        new_text
+    }
 }
 
 #[cfg(test)]
