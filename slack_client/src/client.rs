@@ -64,7 +64,7 @@ impl Client {
             .await?
             .text()
             .await?;
-        // println!("Response: {:?}", text);
+        // println!("Response: {:?}", response);
 
         Ok(from_str::<T::Response>(&response)?)
     }

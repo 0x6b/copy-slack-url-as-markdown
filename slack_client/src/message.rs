@@ -15,7 +15,7 @@ use crate::{
         usergroups::List,
         users::Info as UsersInfo,
     },
-    response::{conversations::Message, usergroups::Usergroup},
+    response::{conversations::Message, usergroups::Usergroup, users::User},
     Client, Emojify,
 };
 
@@ -173,11 +173,7 @@ impl SlackMessage<Initialized<'_>> {
         };
 
         let user = client.users(&UsersInfo { id: &user_id }).await?.user;
-        let user_name = if user.profile.display_name.is_empty() {
-            user.name
-        } else {
-            user.profile.display_name
-        };
+        let user_name = self.get_user_name(user);
 
         Ok((user_name, body.into_iter().last().unwrap_or("".to_string()).emojify()))
     }
@@ -190,13 +186,8 @@ impl SlackMessage<Initialized<'_>> {
             if let Some(m) = cap.get(1) {
                 if let Ok(user) = client.users(&UsersInfo { id: m.as_str() }).await {
                     new_text.push_str(&body[last..m.start().saturating_sub(2)]); // remove the `<@`
-                    let user_name = if user.user.profile.display_name.is_empty() {
-                        user.user.name
-                    } else {
-                        user.user.profile.display_name
-                    };
                     new_text.push('@');
-                    new_text.push_str(&user_name);
+                    new_text.push_str(&self.get_user_name(user.user));
                     last = m.end().saturating_add(1); // remove the `>`
                 }
             }
@@ -247,6 +238,16 @@ impl SlackMessage<Initialized<'_>> {
         }
         new_text.push_str(&body[last..]);
         Ok(new_text)
+    }
+
+    fn get_user_name(&self, user: User) -> String {
+        if user.is_bot {
+            user.real_name
+        } else if user.profile.display_name.is_empty() {
+            user.name
+        } else {
+            user.profile.display_name
+        }
     }
 
     fn parse(url: &Url) -> Result<(&str, &str, f64, Option<f64>)> {
