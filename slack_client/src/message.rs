@@ -112,9 +112,9 @@ impl SlackMessage<Initialized<'_>> {
             .name_normalized;
 
         let (user_name, body) = self.get_user_name_and_body(&client).await?;
-        let body = self.replace_user_id(&body, &client).await?;
-        let body = self.replace_usergroups_id(&body, &client).await?;
-        let body = self.replace_link(&body)?;
+        let body = self.replace_user_ids(&client, &body).await?;
+        let body = self.replace_usergroups_ids(&client, &body).await?;
+        let body = self.replace_links(&body)?;
 
         Ok(SlackMessage {
             state: Resolved {
@@ -178,7 +178,7 @@ impl SlackMessage<Initialized<'_>> {
         Ok((user_name, body.into_iter().last().unwrap_or("".to_string()).emojify()))
     }
 
-    async fn replace_user_id(&self, body: &str, client: &Client) -> Result<String> {
+    async fn replace_user_ids(&self, client: &Client, body: &str) -> Result<String> {
         let mut new_text = String::with_capacity(body.len());
         let mut last = 0;
 
@@ -196,7 +196,7 @@ impl SlackMessage<Initialized<'_>> {
         Ok(new_text)
     }
 
-    async fn replace_usergroups_id(&mut self, body: &str, client: &Client) -> Result<String> {
+    async fn replace_usergroups_ids(&mut self, client: &Client, body: &str) -> Result<String> {
         let mut new_text = String::with_capacity(body.len());
         let mut last = 0;
 
@@ -221,7 +221,7 @@ impl SlackMessage<Initialized<'_>> {
         Ok(new_text)
     }
 
-    fn replace_link(&self, body: &str) -> Result<String> {
+    fn replace_links(&self, body: &str) -> Result<String> {
         let mut new_text = String::with_capacity(body.len());
         let mut last = 0;
 
