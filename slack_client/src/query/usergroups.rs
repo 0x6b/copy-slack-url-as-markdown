@@ -10,8 +10,8 @@ pub trait UsergroupsQuery: Query {}
 /// See: https://api.slack.com/methods/usergroups.list
 #[derive(Serialize)]
 pub struct List {}
-impl<'a> UsergroupsQuery for List {}
-impl<'a> Query for List {
+impl UsergroupsQuery for List {}
+impl Query for List {
     type Response = UsergroupsList;
 
     fn path(&self) -> &'static str {
