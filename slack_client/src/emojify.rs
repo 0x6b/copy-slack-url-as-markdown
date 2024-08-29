@@ -6,7 +6,7 @@ use serde_json::from_slice;
 static DATA: &[u8] = include_bytes!("../../assets/emoji.json");
 static TABLE: LazyLock<BTreeMap<&str, &str>> =
     LazyLock::new(|| from_slice::<BTreeMap<&str, &str>>(DATA).unwrap());
-static RE: LazyLock<Regex> = LazyLock::new(|| Regex::new(r"(:[a-zA-Z0-9\-_+]+:)").unwrap());
+static RE_EMOJI: LazyLock<Regex> = LazyLock::new(|| Regex::new(r"(:[a-zA-Z0-9\-_+]+:)").unwrap());
 
 pub trait Emojify {
     #[allow(dead_code)]
@@ -22,7 +22,7 @@ where
         let mut new_text = String::with_capacity(s.len());
         let mut last = 0;
 
-        for cap in RE.captures_iter(s) {
+        for cap in RE_EMOJI.captures_iter(s) {
             if let Some(m) = cap.get(0) {
                 if let Some(emoji) = TABLE.get(m.as_str()) {
                     new_text.push_str(&s[last..m.start()]);
