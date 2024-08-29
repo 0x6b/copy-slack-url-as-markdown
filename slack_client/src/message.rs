@@ -14,7 +14,11 @@ use crate::{
         usergroups::List,
         users::Info as UsersInfo,
     },
-    response::{conversations::Message, usergroups::Usergroup, users::User},
+    response::{
+        conversations::{Message, Purpose},
+        usergroups::Usergroup,
+        users::User,
+    },
     Client, Emojify,
 };
 
@@ -114,7 +118,27 @@ impl SlackMessage<Initialized<'_>> {
             .await?
             .channel
         {
-            Some(channel) => channel.name_normalized,
+            Some(channel) => match (channel.is_im, channel.is_mpim) {
+                (Some(true), _) => {
+                    format!(
+                        "DM with {}",
+                        client
+                            .users(&UsersInfo { id: &channel.user.unwrap() })
+                            .await?
+                            .user
+                            .unwrap()
+                            .profile
+                            .display_name
+                    )
+                }
+                (_, Some(true)) => {
+                    channel
+                        .purpose
+                        .unwrap_or_else(|| Purpose { value: "Unknown".to_string() })
+                        .value
+                }
+                _ => channel.name_normalized.unwrap_or_else(|| "Unknown".to_string()),
+            },
             None => bail!("Channel not found: {}", self.channel_id),
         };
 

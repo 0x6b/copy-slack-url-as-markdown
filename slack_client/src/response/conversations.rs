@@ -15,7 +15,11 @@ impl Response for ConversationsInfo {
 
 #[derive(Deserialize, Debug)]
 pub struct Channel {
-    pub name_normalized: String,
+    pub is_im: Option<bool>,
+    pub is_mpim: Option<bool>,
+    pub name_normalized: Option<String>,
+    pub purpose: Option<Purpose>,
+    pub user: Option<String>,
 }
 
 #[derive(Deserialize, Debug)]
@@ -35,4 +39,9 @@ pub struct Message {
     pub user: String,
     /// The text of the message.
     pub text: Option<String>,
+}
+
+#[derive(Deserialize, Debug)]
+pub struct Purpose {
+    pub value: String,
 }
