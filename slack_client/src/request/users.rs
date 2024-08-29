@@ -1,9 +1,9 @@
 use serde::Serialize;
 
-use crate::{query::Query, response::users::UsersInfo};
+use crate::{request::Request, response::users::UsersInfo};
 
 /// A marker trait which denotes a query for the `users` API.
-pub trait UsersQuery: Query {}
+pub trait UsersQuery: Request {}
 
 /// A query for `users.info` API.
 ///
@@ -15,7 +15,7 @@ pub struct Info<'a> {
     pub id: &'a str,
 }
 impl<'a> UsersQuery for Info<'a> {}
-impl<'a> Query for Info<'a> {
+impl<'a> Request for Info<'a> {
     type Response = UsersInfo;
 
     fn path(&self) -> &'static str {

@@ -10,7 +10,7 @@ use serde::Deserialize;
 use url::Url;
 
 use crate::{
-    query::{
+    request::{
         conversations::{History, Info as ConversationsInfo, Replies},
         usergroups::List,
         users::Info as UsersInfo,

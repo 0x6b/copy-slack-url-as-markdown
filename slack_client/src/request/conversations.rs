@@ -1,12 +1,12 @@
 use serde::Serialize;
 
 use crate::{
-    query::Query,
+    request::Request,
     response::conversations::{Conversations, ConversationsInfo},
 };
 
 /// A marker trait which denotes a query for the `conversations` API.
-pub trait ConversationsQuery: Query {}
+pub trait ConversationsQuery: Request {}
 
 /// A query for `conversations.info` API.
 ///
@@ -17,7 +17,7 @@ pub struct Info<'a> {
     pub channel: &'a str,
 }
 impl<'a> ConversationsQuery for Info<'a> {}
-impl<'a> Query for Info<'a> {
+impl<'a> Request for Info<'a> {
     type Response = ConversationsInfo;
 
     fn path(&self) -> &'static str {
@@ -44,7 +44,7 @@ pub struct History<'a> {
     pub inclusive: bool,
 }
 impl<'a> ConversationsQuery for History<'a> {}
-impl<'a> Query for History<'a> {
+impl<'a> Request for History<'a> {
     type Response = Conversations;
 
     fn path(&self) -> &'static str {
@@ -76,7 +76,7 @@ pub struct Replies<'a> {
     pub inclusive: bool,
 }
 impl<'a> ConversationsQuery for Replies<'a> {}
-impl<'a> Query for Replies<'a> {
+impl<'a> Request for Replies<'a> {
     type Response = Conversations;
 
     fn path(&self) -> &'static str {

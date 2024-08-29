@@ -3,8 +3,8 @@ use reqwest::header::{HeaderMap, HeaderValue, AUTHORIZATION, CONTENT_TYPE};
 use serde_json::from_str;
 use serde_qs::to_string;
 
-use crate::query::{
-    conversations::ConversationsQuery, usergroups::UsergroupsQuery, users::UsersQuery, Query,
+use crate::request::{
+    conversations::ConversationsQuery, usergroups::UsergroupsQuery, users::UsersQuery, Request,
 };
 
 pub struct Client {
@@ -52,7 +52,7 @@ impl Client {
     // `T::Response`
     async fn request<T>(&self, query: &T) -> Result<T::Response>
     where
-        T: Query,
+        T: Request,
     {
         let response = self
             .client
