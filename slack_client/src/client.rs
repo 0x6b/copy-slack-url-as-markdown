@@ -56,7 +56,10 @@ impl Client {
     {
         let response = self
             .client
-            .get(&format!("{}/{}?{}", self.endpoint, query.path(), to_string(query)?))
+            .request(
+                query.method().into(),
+                &format!("{}/{}?{}", self.endpoint, query.path(), to_string(query)?),
+            )
             .send()
             .await?
             .text()
