@@ -7,6 +7,7 @@ use serde::Serialize;
 
 use crate::response::Response;
 
+/// An enum representing the HTTP request method.
 pub enum RequestMethod {
     Get,
     Post,
@@ -21,12 +22,15 @@ impl From<RequestMethod> for Method {
     }
 }
 
-/// A trait for a query to the Slack API, which defines the path to the endpoint and the response
+/// A trait for a request to the Slack API, which defines the path to the endpoint and the response
 /// type as its associated type.
 pub trait Request: Serialize {
     type Response: Response;
 
+    /// Returns the path to the endpoint.
     fn path(&self) -> &'static str;
+
+    /// Returns the HTTP request method.
     fn method(&self) -> RequestMethod {
         RequestMethod::Get
     }

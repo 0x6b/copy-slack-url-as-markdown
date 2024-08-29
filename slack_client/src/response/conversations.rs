@@ -21,6 +21,8 @@ impl Response for Conversations {}
 
 #[derive(Deserialize, Debug)]
 pub struct Message {
+    /// User ID of the author.
     pub user: String,
+    /// The text of the message.
     pub text: Option<String>,
 }

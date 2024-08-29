@@ -5,10 +5,10 @@ use crate::{
     response::conversations::{Conversations, ConversationsInfo},
 };
 
-/// A marker trait which denotes a query for the `conversations` API.
+/// A marker trait which denotes a request for the `conversations` API.
 pub trait ConversationsQuery: Request {}
 
-/// A query for `conversations.info` API.
+/// A request for `conversations.info` API.
 ///
 /// See: https://api.slack.com/methods/conversations.info
 #[derive(Serialize)]
@@ -25,7 +25,7 @@ impl<'a> Request for Info<'a> {
     }
 }
 
-/// A query for `conversations.history` API.
+/// A request for `conversations.history` API.
 ///
 /// See: https://api.slack.com/methods/conversations.history
 #[derive(Serialize)]
@@ -52,7 +52,7 @@ impl<'a> Request for History<'a> {
     }
 }
 
-/// A query for `conversations.replies` API.
+/// A request for `conversations.replies` API.
 ///
 /// See: https://api.slack.com/methods/conversations.replies
 #[derive(Serialize)]
