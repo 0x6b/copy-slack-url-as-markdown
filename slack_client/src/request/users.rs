@@ -2,10 +2,10 @@ use serde::Serialize;
 
 use crate::{request::Request, response::users::UsersInfo};
 
-/// A marker trait which denotes a query for the `users` API.
+/// A marker trait which denotes a request for the `users` API.
 pub trait UsersQuery: Request {}
 
-/// A query for `users.info` API.
+/// A request for `users.info` API.
 ///
 /// See: https://api.slack.com/methods/users.info
 #[derive(Serialize)]

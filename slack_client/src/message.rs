@@ -1,5 +1,4 @@
 use std::{
-    num::ParseFloatError,
     ops::{Deref, DerefMut},
     sync::LazyLock,
 };
@@ -102,6 +101,11 @@ impl<'a> TryFrom<&'a Url> for SlackMessage<Initialized<'a>> {
 }
 
 impl SlackMessage<Initialized<'_>> {
+    /// Resolve the channel name, user name, and the body of the message.
+    ///
+    /// # Arguments
+    ///
+    /// - `token` - The Slack API token.
     pub async fn resolve(&mut self, token: &str) -> Result<SlackMessage<Resolved>> {
         let client = Client::new(token)?;
 
@@ -127,6 +131,7 @@ impl SlackMessage<Initialized<'_>> {
         })
     }
 
+    /// Get the body of the message and the user name who posted the message.
     async fn get_user_name_and_body(&self, client: &Client) -> Result<(String, String)> {
         let history = client
             .conversations(&History {
@@ -178,6 +183,7 @@ impl SlackMessage<Initialized<'_>> {
         Ok((user_name, body.into_iter().last().unwrap_or("".to_string()).emojify()))
     }
 
+    /// Replace the user mentions (`<@ID>`) to the actual user name.
     async fn replace_user_ids(&self, client: &Client, body: &str) -> Result<String> {
         let mut new_text = String::with_capacity(body.len());
         let mut last = 0;
@@ -196,6 +202,7 @@ impl SlackMessage<Initialized<'_>> {
         Ok(new_text)
     }
 
+    /// Replace the usergroup mentions (`<!subteam^ID>`) to the actual usergroup handle.
     async fn replace_usergroups_ids(&mut self, client: &Client, body: &str) -> Result<String> {
         let mut new_text = String::with_capacity(body.len());
         let mut last = 0;
@@ -221,6 +228,8 @@ impl SlackMessage<Initialized<'_>> {
         Ok(new_text)
     }
 
+    /// Replace the mrkdown format of the links (`<url|title>`) to more readable format (`"title"
+    /// <url>`) for both plain text and the HTML.
     fn replace_links(&self, body: &str) -> Result<String> {
         let mut new_text = String::with_capacity(body.len());
         let mut last = 0;
@@ -240,6 +249,8 @@ impl SlackMessage<Initialized<'_>> {
         Ok(new_text)
     }
 
+    /// Naive implementation to get the username. If the user is a bot, return the real name, else
+    /// return the display name if it's not empty, otherwise return the name.
     fn get_user_name(&self, user: User) -> String {
         if user.is_bot {
             user.real_name
@@ -250,30 +261,36 @@ impl SlackMessage<Initialized<'_>> {
         }
     }
 
+    /// Parse the given URL and return the channel ID, timestamp, and thread timestamp.
+    ///
+    /// # Arguments
+    ///
+    /// - `url` - The URL to parse.
+    ///
+    /// # Returns
+    ///
+    /// A tuple containing the channel ID (from path segments), timestamp as &str (from another path
+    /// segment), timestamp in f64 (parsed the timestamp as f64), and thread timestamp (from query
+    /// parameters).
     fn parse(url: &Url) -> Result<(&str, &str, f64, Option<f64>)> {
         let channel_id = url
             .path_segments()
             .ok_or(anyhow!("Failed to get path segments"))?
             .nth(1)
             .ok_or(anyhow!("Failed to get the last path segment"))?;
+
         let ts = url
             .path_segments()
             .ok_or(anyhow!("Failed to get path segments"))?
             .last()
             .ok_or(anyhow!("Failed to get the last path segment"))?;
-
-        let (ts, ts64) = Self::convert_to_ts(ts)?;
+        let num = ts.trim_start_matches(|c: char| !c.is_numeric());
+        let (int_part, decimal_part) = num.split_at(num.len() - 6);
+        let ts64 = format!("{int_part}.{decimal_part}").parse::<f64>()?;
 
         let params: QueryParams =
             serde_qs::Config::new(5, false).deserialize_str(url.query().unwrap_or(""))?;
 
-        Ok((channel_id, ts, ts64, params.thread_ts))
-    }
-
-    fn convert_to_ts(input: &str) -> Result<(&str, f64), ParseFloatError> {
-        let num = input.trim_start_matches(|c: char| !c.is_numeric());
-        let (int_part, decimal_part) = num.split_at(num.len() - 6);
-        let ts64 = format!("{int_part}.{decimal_part}").parse::<f64>()?;
-        Ok((num, ts64))
+        Ok((channel_id, num, ts64, params.thread_ts))
     }
 }
