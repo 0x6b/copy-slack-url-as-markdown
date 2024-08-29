@@ -4,7 +4,7 @@ use tera::{Context, Tera};
 pub trait State {}
 impl State for Uninitialized {}
 impl State for Initialized {}
-impl State for Resolved {}
+impl State for Retrieved {}
 
 pub type CliArgs = Uninitialized;
 
@@ -57,7 +57,7 @@ pub struct Initialized {
     pub tera: Tera,
 }
 
-pub struct Resolved {
+pub struct Retrieved {
     pub quote: bool,
     pub tera: Tera,
     pub context: Context,
