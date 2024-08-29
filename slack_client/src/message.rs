@@ -1,6 +1,7 @@
-use std::{num::ParseFloatError, ops::Deref};
+use std::{num::ParseFloatError, ops::Deref, sync::LazyLock};
 
 use anyhow::{anyhow, bail, Error, Result};
+use regex::Regex;
 use serde::Deserialize;
 use url::Url;
 
@@ -12,6 +13,8 @@ use crate::{
     response::conversations::Message,
     Client, Emojify,
 };
+
+static RE_USER: LazyLock<Regex> = LazyLock::new(|| Regex::new(r"<@([A-Z0-9]+)>").unwrap());
 
 #[derive(Deserialize, Debug, Clone, Copy)]
 struct QueryParams {
@@ -126,6 +129,29 @@ impl SlackMessage<Initialized<'_>> {
         };
 
         let user = client.users(&UsersInfo { id: &id }).await?.user;
+        let body = body.into_iter().last().unwrap_or("".to_string()).emojify();
+
+        let mut new_text = String::with_capacity(body.len());
+        let mut last = 0;
+
+        for cap in RE_USER.captures_iter(body.as_str()) {
+            println!("{:?}", cap);
+            if let Some(m) = cap.get(1) {
+                println!("{:?}", m);
+                if let Ok(user) = client.users(&UsersInfo { id: m.as_str() }).await {
+                    new_text.push_str(&body[last..m.start().saturating_sub(2)]); // remove the `<@`
+                    let user_name = if user.user.profile.display_name.is_empty() {
+                        user.user.name
+                    } else {
+                        user.user.profile.display_name
+                    };
+                    new_text.push_str("@");
+                    new_text.push_str(&user_name);
+                    last = m.end().saturating_add(1); // remove the `>`
+                }
+            }
+        }
+        new_text.push_str(&body[last..]);
 
         Ok(SlackMessage {
             state: Resolved {
@@ -136,7 +162,7 @@ impl SlackMessage<Initialized<'_>> {
                 } else {
                     user.profile.display_name
                 },
-                body: body.into_iter().last().unwrap_or("".to_string()).emojify(),
+                body: new_text,
                 ts: self.ts.parse::<i64>()?,
             },
         })
