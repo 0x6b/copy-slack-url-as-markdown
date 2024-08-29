@@ -2,7 +2,10 @@ pub mod conversations;
 pub mod usergroups;
 pub mod users;
 
-use std::fmt::Debug;
+use std::{
+    fmt,
+    fmt::{Debug, Display, Formatter},
+};
 
 use reqwest::Method;
 use serde::Serialize;
@@ -21,6 +24,21 @@ impl From<RequestMethod> for Method {
             RequestMethod::Get => Method::GET,
             RequestMethod::Post => Method::POST,
         }
+    }
+}
+
+impl Display for RequestMethod {
+    fn fmt(&self, f: &mut Formatter) -> fmt::Result {
+        match self {
+            RequestMethod::Get => write!(f, "GET"),
+            RequestMethod::Post => write!(f, "POST"),
+        }
+    }
+}
+
+impl Debug for RequestMethod {
+    fn fmt(&self, f: &mut Formatter) -> fmt::Result {
+        write!(f, "{}", self)
     }
 }
 
