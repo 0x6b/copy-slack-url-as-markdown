@@ -11,7 +11,7 @@ pub trait ConversationsQuery: Request {}
 /// A request for `conversations.info` API.
 ///
 /// See: https://api.slack.com/methods/conversations.info
-#[derive(Serialize)]
+#[derive(Serialize, Debug)]
 pub struct Info<'a> {
     /// Conversation ID to learn more about.
     pub channel: &'a str,
@@ -28,7 +28,7 @@ impl<'a> Request for Info<'a> {
 /// A request for `conversations.history` API.
 ///
 /// See: https://api.slack.com/methods/conversations.history
-#[derive(Serialize)]
+#[derive(Serialize, Debug)]
 pub struct History<'a> {
     /// Conversation ID to fetch history for.
     pub channel: &'a str,
@@ -55,7 +55,7 @@ impl<'a> Request for History<'a> {
 /// A request for `conversations.replies` API.
 ///
 /// See: https://api.slack.com/methods/conversations.replies
-#[derive(Serialize)]
+#[derive(Serialize, Debug)]
 pub struct Replies<'a> {
     /// Conversation ID to fetch thread from.
     pub channel: &'a str,

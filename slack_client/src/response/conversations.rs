@@ -2,18 +2,18 @@ use serde::Deserialize;
 
 use crate::response::Response;
 
-#[derive(Deserialize)]
+#[derive(Deserialize, Debug)]
 pub struct ConversationsInfo {
     pub channel: Channel,
 }
 impl Response for ConversationsInfo {}
 
-#[derive(Deserialize)]
+#[derive(Deserialize, Debug)]
 pub struct Channel {
     pub name_normalized: String,
 }
 
-#[derive(Deserialize)]
+#[derive(Deserialize, Debug)]
 pub struct Conversations {
     pub messages: Option<Vec<Message>>,
 }
