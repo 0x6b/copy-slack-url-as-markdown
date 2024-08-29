@@ -4,10 +4,15 @@ use crate::response::Response;
 
 #[derive(Deserialize, Debug)]
 pub struct UsersInfo {
+    pub ok: bool,
     /// The user object.
-    pub user: User,
+    pub user: Option<User>,
 }
-impl Response for UsersInfo {}
+impl Response for UsersInfo {
+    fn is_ok(&self) -> bool {
+        self.ok
+    }
+}
 
 #[derive(Deserialize, Debug)]
 pub struct User {

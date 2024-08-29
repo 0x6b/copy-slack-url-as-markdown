@@ -109,11 +109,14 @@ impl SlackMessage<Initialized<'_>> {
     pub async fn resolve(&mut self, token: &str) -> Result<SlackMessage<Resolved>> {
         let client = Client::new(token)?;
 
-        let channel_name = client
+        let channel_name = match client
             .conversations(&ConversationsInfo { channel: self.channel_id })
             .await?
             .channel
-            .name_normalized;
+        {
+            Some(channel) => channel.name_normalized,
+            None => bail!("Channel not found: {}", self.channel_id),
+        };
 
         let (user_name, body) = self.get_user_name_and_body(&client).await?;
         let body = self.replace_user_ids(&client, &body).await?;
@@ -177,7 +180,10 @@ impl SlackMessage<Initialized<'_>> {
             }
         };
 
-        let user = client.users(&UsersInfo { id: &user_id }).await?.user;
+        let user = match client.users(&UsersInfo { id: &user_id }).await?.user {
+            Some(user) => user,
+            None => bail!("User not found: {}", user_id),
+        };
         let user_name = self.get_user_name(user);
 
         Ok((user_name, body.into_iter().last().unwrap_or("".to_string()).emojify()))
@@ -190,11 +196,13 @@ impl SlackMessage<Initialized<'_>> {
 
         for cap in RE_USER.captures_iter(body) {
             if let Some(m) = cap.get(1) {
-                if let Ok(user) = client.users(&UsersInfo { id: m.as_str() }).await {
-                    new_text.push_str(&body[last..m.start().saturating_sub(2)]); // remove the `<@`
-                    new_text.push('@');
-                    new_text.push_str(&self.get_user_name(user.user));
-                    last = m.end().saturating_add(1); // remove the `>`
+                if let Ok(response) = client.users(&UsersInfo { id: m.as_str() }).await {
+                    if let Some(user) = response.user {
+                        new_text.push_str(&body[last..m.start().saturating_sub(2)]); // remove the `<@`
+                        new_text.push('@');
+                        new_text.push_str(&self.get_user_name(user));
+                        last = m.end().saturating_add(1); // remove the `>`
+                    }
                 }
             }
         }
@@ -209,7 +217,10 @@ impl SlackMessage<Initialized<'_>> {
 
         for cap in RE_USERGROUP.captures_iter(body) {
             if self.usergroups.as_ref().is_none() {
-                self.usergroups = Some(client.usergroups(&List {}).await?.usergroups);
+                self.usergroups = Some(match client.usergroups(&List {}).await?.usergroups {
+                    Some(list) => list,
+                    None => bail!("Failed to get usergroups"),
+                });
             }
 
             if let Some(m) = cap.get(1) {
