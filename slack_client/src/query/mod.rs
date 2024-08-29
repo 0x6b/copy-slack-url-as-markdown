@@ -1,4 +1,5 @@
 pub mod conversations;
+pub mod usergroups;
 pub mod users;
 
 use serde::Serialize;
