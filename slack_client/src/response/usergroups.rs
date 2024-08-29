@@ -4,9 +4,14 @@ use crate::response::Response;
 
 #[derive(Deserialize, Debug)]
 pub struct UsergroupsList {
-    pub usergroups: Vec<Usergroup>,
+    pub ok: bool,
+    pub usergroups: Option<Vec<Usergroup>>,
 }
-impl Response for UsergroupsList {}
+impl Response for UsergroupsList {
+    fn is_ok(&self) -> bool {
+        self.ok
+    }
+}
 
 #[derive(Deserialize, Debug)]
 pub struct Usergroup {

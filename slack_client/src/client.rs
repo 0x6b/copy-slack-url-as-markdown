@@ -1,10 +1,13 @@
-use anyhow::Result;
+use anyhow::{bail, Result};
 use reqwest::header::{HeaderMap, HeaderValue, AUTHORIZATION, CONTENT_TYPE};
 use serde_json::from_str;
 use serde_qs::to_string;
 
-use crate::request::{
-    conversations::ConversationsQuery, usergroups::UsergroupsQuery, users::UsersQuery, Request,
+use crate::{
+    request::{
+        conversations::ConversationsQuery, usergroups::UsergroupsQuery, users::UsersQuery, Request,
+    },
+    response::Response,
 };
 
 pub struct Client {
@@ -54,18 +57,24 @@ impl Client {
     where
         T: Request,
     {
+        let url = format!("{}/{}?{}", self.endpoint, request.path(), to_string(request)?);
         let response = self
             .client
-            .request(
-                request.method().into(),
-                &format!("{}/{}?{}", self.endpoint, request.path(), to_string(request)?),
-            )
+            .request(request.method().into(), &url)
             .send()
             .await?
             .text()
             .await?;
-        // println!("Response: {:?}", response);
 
-        Ok(from_str::<T::Response>(&response)?)
+        // println!("Request: {} {}", request.method(), url);
+        // println!("Response: {}", response);
+
+        let result = from_str::<T::Response>(&response)?;
+
+        if result.is_ok() {
+            Ok(result)
+        } else {
+            bail!("Request failed: {}", response);
+        }
     }
 }

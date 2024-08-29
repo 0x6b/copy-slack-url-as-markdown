@@ -4,9 +4,14 @@ use crate::response::Response;
 
 #[derive(Deserialize, Debug)]
 pub struct ConversationsInfo {
-    pub channel: Channel,
+    pub ok: bool,
+    pub channel: Option<Channel>,
 }
-impl Response for ConversationsInfo {}
+impl Response for ConversationsInfo {
+    fn is_ok(&self) -> bool {
+        self.ok
+    }
+}
 
 #[derive(Deserialize, Debug)]
 pub struct Channel {
@@ -15,9 +20,14 @@ pub struct Channel {
 
 #[derive(Deserialize, Debug)]
 pub struct Conversations {
+    pub ok: bool,
     pub messages: Option<Vec<Message>>,
 }
-impl Response for Conversations {}
+impl Response for Conversations {
+    fn is_ok(&self) -> bool {
+        self.ok
+    }
+}
 
 #[derive(Deserialize, Debug)]
 pub struct Message {
