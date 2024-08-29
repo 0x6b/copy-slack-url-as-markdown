@@ -106,7 +106,7 @@ impl SlackMessage<Initialized<'_>> {
         let client = Client::new(token)?;
 
         let channel_name = client
-            .conversations::<_>(&ConversationsInfo { channel: self.channel_id })
+            .conversations(&ConversationsInfo { channel: self.channel_id })
             .await?
             .channel
             .name_normalized;
