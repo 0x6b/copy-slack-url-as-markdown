@@ -6,14 +6,17 @@ Convert a Slack URL in the clipboard to Markdown format, then copy back to the c
 
 Expose your Slack user token as `SLACK_TOKEN` environment variable to use the utilities, or pass the token as an argument. Please refer to the [Slack documentation](https://api.slack.com/concepts/token-types) to see how to get the token.
 
-Following permission scopes would be required. The required scopes depend on the type of channel-like object you're working with. You only need the scopes corresponding to that conversation type, found below.
+The following permission scopes are required to resolve the user and user group names:
 
-| Conversation Type     | Required Scopes                                                                                                                     |
-|-----------------------|-------------------------------------------------------------------------------------------------------------------------------------|
-| Public channels       | [`channels:history`](https://api.slack.com/scopes/channels:history),  [`channels:read`](https://api.slack.com/scopes/channels:read) |
-| Private channels      | [`groups:history`](https://api.slack.com/scopes/groups:history),  [`groups:read`](https://api.slack.com/scopes/groups:read)         |
-| Direct messages       | [`im:history`](https://api.slack.com/scopes/im:history),  [`im:read`](https://api.slack.com/scopes/im:read)                         |
-| Group direct messages | [`mpim:history`](https://api.slack.com/scopes/mpim:history),  [`mpim:read`](https://api.slack.com/scopes/mpim:read)                 |
+- [`users:read`](https://api.slack.com/scopes/users:read)
+- [`usergroups:read`](https://api.slack.com/scopes/usergroups:read)
+
+Following permission scopes would also be required to get the message to copy, depend on the type of channel-like object (conversation type) you're working with.
+
+- Public channels: [`channels:history`](https://api.slack.com/scopes/channels:history), [`channels:read`](https://api.slack.com/scopes/channels:read)
+- Private channels: [`groups:history`](https://api.slack.com/scopes/groups:history), [`groups:read`](https://api.slack.com/scopes/groups:read)
+- Direct messages: [`im:history`](https://api.slack.com/scopes/im:history), [`im:read`](https://api.slack.com/scopes/im:read)
+- Group direct messages: [`mpim:history`](https://api.slack.com/scopes/mpim:history), [`mpim:read`](https://api.slack.com/scopes/mpim:read)
 
 ## Usage
 

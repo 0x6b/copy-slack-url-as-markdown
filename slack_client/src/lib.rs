@@ -2,7 +2,7 @@ mod client;
 mod emojify;
 pub mod message;
 
-mod query;
+mod request;
 mod response;
 
 pub use client::Client;

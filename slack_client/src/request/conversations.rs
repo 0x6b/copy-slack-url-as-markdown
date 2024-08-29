@@ -1,23 +1,23 @@
 use serde::Serialize;
 
 use crate::{
-    query::Query,
+    request::Request,
     response::conversations::{Conversations, ConversationsInfo},
 };
 
-/// A marker trait which denotes a query for the `conversations` API.
-pub trait ConversationsQuery: Query {}
+/// A marker trait which denotes a request for the `conversations` API.
+pub trait ConversationsQuery: Request {}
 
-/// A query for `conversations.info` API.
+/// A request for `conversations.info` API.
 ///
 /// See: https://api.slack.com/methods/conversations.info
-#[derive(Serialize)]
+#[derive(Serialize, Debug)]
 pub struct Info<'a> {
     /// Conversation ID to learn more about.
     pub channel: &'a str,
 }
 impl<'a> ConversationsQuery for Info<'a> {}
-impl<'a> Query for Info<'a> {
+impl<'a> Request for Info<'a> {
     type Response = ConversationsInfo;
 
     fn path(&self) -> &'static str {
@@ -25,10 +25,10 @@ impl<'a> Query for Info<'a> {
     }
 }
 
-/// A query for `conversations.history` API.
+/// A request for `conversations.history` API.
 ///
 /// See: https://api.slack.com/methods/conversations.history
-#[derive(Serialize)]
+#[derive(Serialize, Debug)]
 pub struct History<'a> {
     /// Conversation ID to fetch history for.
     pub channel: &'a str,
@@ -44,7 +44,7 @@ pub struct History<'a> {
     pub inclusive: bool,
 }
 impl<'a> ConversationsQuery for History<'a> {}
-impl<'a> Query for History<'a> {
+impl<'a> Request for History<'a> {
     type Response = Conversations;
 
     fn path(&self) -> &'static str {
@@ -52,10 +52,10 @@ impl<'a> Query for History<'a> {
     }
 }
 
-/// A query for `conversations.replies` API.
+/// A request for `conversations.replies` API.
 ///
 /// See: https://api.slack.com/methods/conversations.replies
-#[derive(Serialize)]
+#[derive(Serialize, Debug)]
 pub struct Replies<'a> {
     /// Conversation ID to fetch thread from.
     pub channel: &'a str,
@@ -76,7 +76,7 @@ pub struct Replies<'a> {
     pub inclusive: bool,
 }
 impl<'a> ConversationsQuery for Replies<'a> {}
-impl<'a> Query for Replies<'a> {
+impl<'a> Request for Replies<'a> {
     type Response = Conversations;
 
     fn path(&self) -> &'static str {
