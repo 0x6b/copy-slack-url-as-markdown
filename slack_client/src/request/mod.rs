@@ -2,6 +2,8 @@ pub mod conversations;
 pub mod usergroups;
 pub mod users;
 
+use std::fmt::Debug;
+
 use reqwest::Method;
 use serde::Serialize;
 
@@ -24,7 +26,7 @@ impl From<RequestMethod> for Method {
 
 /// A trait for a request to the Slack API, which defines the path to the endpoint and the response
 /// type as its associated type.
-pub trait Request: Serialize {
+pub trait Request: Serialize + Debug {
     type Response: Response;
 
     /// Returns the path to the endpoint.
