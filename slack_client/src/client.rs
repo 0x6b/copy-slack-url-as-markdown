@@ -25,40 +25,40 @@ impl Client {
     }
 
     /// https://api.slack.com/methods/users.* API
-    pub async fn users<T>(&self, query: &T) -> Result<T::Response>
+    pub async fn users<T>(&self, request: &T) -> Result<T::Response>
     where
         T: UsersQuery,
     {
-        self.request(query).await
+        self.request(request).await
     }
 
     /// https://api.slack.com/methods/conversations.* API
-    pub async fn conversations<T>(&self, query: &T) -> Result<T::Response>
+    pub async fn conversations<T>(&self, request: &T) -> Result<T::Response>
     where
         T: ConversationsQuery,
     {
-        self.request(query).await
+        self.request(request).await
     }
 
     /// https://api.slack.com/methods/usergroups.* API
-    pub async fn usergroups<T>(&self, query: &T) -> Result<T::Response>
+    pub async fn usergroups<T>(&self, request: &T) -> Result<T::Response>
     where
         T: UsergroupsQuery,
     {
-        self.request(query).await
+        self.request(request).await
     }
 
     // Helper method to make a request with query `T`, and deserialize the response into
     // `T::Response`
-    async fn request<T>(&self, query: &T) -> Result<T::Response>
+    async fn request<T>(&self, request: &T) -> Result<T::Response>
     where
         T: Request,
     {
         let response = self
             .client
             .request(
-                query.method().into(),
-                &format!("{}/{}?{}", self.endpoint, query.path(), to_string(query)?),
+                request.method().into(),
+                &format!("{}/{}?{}", self.endpoint, request.path(), to_string(request)?),
             )
             .send()
             .await?
