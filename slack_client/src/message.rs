@@ -195,7 +195,7 @@ impl SlackMessage<Initialized<'_>> {
                     } else {
                         user.user.profile.display_name
                     };
-                    new_text.push_str("@");
+                    new_text.push('@');
                     new_text.push_str(&user_name);
                     last = m.end().saturating_add(1); // remove the `>`
                 }
@@ -219,7 +219,7 @@ impl SlackMessage<Initialized<'_>> {
                     let group_handle = list.iter().find(|g| g.id == m.as_str());
                     if let Some(handle) = group_handle {
                         new_text.push_str(&body[last..m.start().saturating_sub(10)]); // remove the `<subteam^`
-                        new_text.push_str("@");
+                        new_text.push('@');
                         new_text.push_str(&handle.handle);
                         last = m.end().saturating_add(1); // remove the `>`
                     }
@@ -237,11 +237,11 @@ impl SlackMessage<Initialized<'_>> {
         for cap in RE_LINK.captures_iter(body) {
             if let (Some(url), Some(title)) = (cap.get(1), cap.get(2)) {
                 new_text.push_str(&body[last..url.start().saturating_sub(1)]); // remove the `<`
-                new_text.push_str(r#"""#);
-                new_text.push_str(&title.as_str());
+                new_text.push('"');
+                new_text.push_str(title.as_str());
                 new_text.push_str(r#"" <"#);
-                new_text.push_str(&url.as_str());
-                new_text.push_str(">");
+                new_text.push_str(url.as_str());
+                new_text.push('>');
                 last = title.end().saturating_add(1); // remove the `>`
             }
         }

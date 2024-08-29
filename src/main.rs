@@ -13,7 +13,7 @@ async fn main() -> Result<()> {
         Err(why) => bail!("failed to initialize client: {why}"),
     };
 
-    let mut clipboard = match arboard::Clipboard::new(){
+    let mut clipboard = match arboard::Clipboard::new() {
         Ok(c) => c,
         Err(why) => bail!("failed to access system clipboard: {why}"),
     };
