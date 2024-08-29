@@ -1,4 +1,5 @@
 pub mod conversations;
+pub mod usergroups;
 pub mod users;
 
 /// A marker trait for a response from the Slack API, which is just an alias for

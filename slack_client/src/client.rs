@@ -3,7 +3,9 @@ use reqwest::header::{HeaderMap, HeaderValue, AUTHORIZATION, CONTENT_TYPE};
 use serde_json::from_str;
 use serde_qs::to_string;
 
-use crate::query::{conversations::ConversationsQuery, users::UsersQuery, Query};
+use crate::query::{
+    conversations::ConversationsQuery, usergroups::UsergroupsQuery, users::UsersQuery, Query,
+};
 
 pub struct Client {
     endpoint: String,
@@ -38,13 +40,21 @@ impl Client {
         self.request(query).await
     }
 
+    /// https://api.slack.com/methods/usergroups.* API
+    pub async fn usergroups<T>(&self, query: &T) -> Result<T::Response>
+    where
+        T: UsergroupsQuery,
+    {
+        self.request(query).await
+    }
+
     // Helper method to make a request with query `T`, and deserialize the response into
     // `T::Response`
     async fn request<T>(&self, query: &T) -> Result<T::Response>
     where
         T: Query,
     {
-        let text = self
+        let response = self
             .client
             .get(&format!("{}/{}?{}", self.endpoint, query.path(), to_string(query)?))
             .send()
@@ -52,8 +62,7 @@ impl Client {
             .text()
             .await?;
         // println!("Response: {:?}", text);
-        let response = from_str::<T::Response>(&text)?;
 
-        Ok(response)
+        Ok(from_str::<T::Response>(&response)?)
     }
 }
