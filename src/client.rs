@@ -8,7 +8,7 @@ use tera::{Context, Tera};
 use tokio::fs::read_to_string;
 
 use crate::{
-    state::{CliArgs, Initialized, Resolved, State, Templates, Uninitialized},
+    state::{CliArgs, Initialized, Retrieved, State, Templates, Uninitialized},
     template::{
         ContextKey,
         ContextKey::{
@@ -25,14 +25,14 @@ const TEMPLATE_TEXT_QUOTE: &str = include_str!("../assets/templates/text_quote")
 const TEMPLATE_RICH_TEXT: &str = include_str!("../assets/templates/rich_text");
 const TEMPLATE_RICH_TEXT_QUOTE: &str = include_str!("../assets/templates/rich_text_quote");
 
-pub struct Copier<S>
+pub struct Client<S>
 where
     S: State,
 {
     state: S,
 }
 
-impl<S> Deref for Copier<S>
+impl<S> Deref for Client<S>
 where
     S: State,
 {
@@ -43,11 +43,11 @@ where
     }
 }
 
-impl Copier<Uninitialized> {
-    pub async fn new() -> Result<Copier<Initialized>> {
+impl Client<Uninitialized> {
+    pub async fn new() -> Result<Client<Initialized>> {
         let Uninitialized { token, quote, timezone, templates } = CliArgs::parse();
 
-        Ok(Copier {
+        Ok(Client {
             state: Initialized {
                 token,
                 quote,
@@ -88,13 +88,13 @@ impl Copier<Uninitialized> {
     }
 }
 
-impl Copier<Initialized> {
-    pub async fn resolve(&self, url: &url::Url) -> Result<Copier<Resolved>> {
+impl Client<Initialized> {
+    pub async fn retrieve(&self, url: &url::Url) -> Result<Client<Retrieved>> {
         let mut message: SlackMessage<message::Initialized> = SlackMessage::try_from(url)?;
         let message: SlackMessage<message::Resolved> = message.resolve(&self.token).await?;
 
-        Ok(Copier {
-            state: Resolved {
+        Ok(Client {
+            state: Retrieved {
                 quote: self.quote,
                 tera: self.tera.clone(),
                 context: Self::setup_context(&message, &self.timezone).await?,
@@ -158,7 +158,7 @@ impl Copier<Initialized> {
     }
 }
 
-impl Copier<Resolved> {
+impl Client<Retrieved> {
     pub fn render(&self) -> Result<(String, String)> {
         let (rich_text, text) = if self.quote {
             (
