@@ -1,9 +1,14 @@
-use anyhow::Result;
+use anyhow::{bail, Result};
 use reqwest::header::{HeaderMap, HeaderValue, AUTHORIZATION, CONTENT_TYPE};
 use serde_json::from_str;
 use serde_qs::to_string;
 
-use crate::query::{conversations::ConversationsQuery, users::UsersQuery, Query};
+use crate::{
+    request::{
+        conversations::ConversationsQuery, usergroups::UsergroupsQuery, users::UsersQuery, Request,
+    },
+    response::Response,
+};
 
 pub struct Client {
     endpoint: String,
@@ -23,37 +28,53 @@ impl Client {
     }
 
     /// https://api.slack.com/methods/users.* API
-    pub async fn users<T>(&self, query: &T) -> Result<T::Response>
+    pub async fn users<T>(&self, request: &T) -> Result<T::Response>
     where
         T: UsersQuery,
     {
-        self.request(query).await
+        self.request(request).await
     }
 
     /// https://api.slack.com/methods/conversations.* API
-    pub async fn conversations<T>(&self, query: &T) -> Result<T::Response>
+    pub async fn conversations<T>(&self, request: &T) -> Result<T::Response>
     where
         T: ConversationsQuery,
     {
-        self.request(query).await
+        self.request(request).await
+    }
+
+    /// https://api.slack.com/methods/usergroups.* API
+    pub async fn usergroups<T>(&self, request: &T) -> Result<T::Response>
+    where
+        T: UsergroupsQuery,
+    {
+        self.request(request).await
     }
 
     // Helper method to make a request with query `T`, and deserialize the response into
     // `T::Response`
-    async fn request<T>(&self, query: &T) -> Result<T::Response>
+    async fn request<T>(&self, request: &T) -> Result<T::Response>
     where
-        T: Query,
+        T: Request,
     {
-        let text = self
+        let url = format!("{}/{}?{}", self.endpoint, request.path(), to_string(request)?);
+        let response = self
             .client
-            .get(&format!("{}/{}?{}", self.endpoint, query.path(), to_string(query)?))
+            .request(request.method().into(), &url)
             .send()
             .await?
             .text()
             .await?;
-        // println!("Response: {:?}", text);
-        let response = from_str::<T::Response>(&text)?;
 
-        Ok(response)
+        // println!("Request: {} {}", request.method(), url);
+        // println!("Response: {}", response);
+
+        let result = from_str::<T::Response>(&response)?;
+
+        if result.is_ok() {
+            Ok(result)
+        } else {
+            bail!("Request failed: {}", response);
+        }
     }
 }
