@@ -2,7 +2,7 @@ use std::{ops::Deref, path::PathBuf};
 
 use anyhow::Result;
 use clap::Parser;
-use slack_client::SlackMessage;
+use slack_client::{message, SlackMessage};
 use strum::EnumProperty;
 use tera::{Context, Tera};
 use tokio::fs::read_to_string;
@@ -90,10 +90,8 @@ impl Copier<Uninitialized> {
 
 impl Copier<Initialized> {
     pub async fn resolve(&self, url: &url::Url) -> Result<Copier<Resolved>> {
-        let message: SlackMessage<slack_client::message::Initialized> =
-            SlackMessage::try_from(url)?;
-        let message: SlackMessage<slack_client::message::Resolved> =
-            message.resolve(&self.token).await?;
+        let mut message: SlackMessage<message::Initialized> = SlackMessage::try_from(url)?;
+        let message: SlackMessage<message::Resolved> = message.resolve(&self.token).await?;
 
         Ok(Copier {
             state: Resolved {
@@ -105,7 +103,7 @@ impl Copier<Initialized> {
     }
 
     async fn setup_context(
-        message: &SlackMessage<slack_client::message::Resolved<'_>>,
+        message: &SlackMessage<message::Resolved<'_>>,
         timezone: &str,
     ) -> Result<Context> {
         let mut context = Context::new();
