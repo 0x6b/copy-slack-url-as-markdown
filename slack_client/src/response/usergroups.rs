@@ -10,5 +10,6 @@ impl Response for UsergroupsList {}
 
 #[derive(Deserialize, Debug)]
 pub struct Usergroup {
+    pub id: String,
     pub handle: String,
 }

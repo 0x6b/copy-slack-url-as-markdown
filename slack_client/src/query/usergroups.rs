@@ -1,9 +1,6 @@
 use serde::Serialize;
 
-use crate::{
-    query::Query,
-    response::{usergroups::UsergroupsList, users::UsersInfo},
-};
+use crate::{query::Query, response::usergroups::UsergroupsList};
 
 /// A marker trait which denotes a query for the `usergroups` API.
 pub trait UsergroupsQuery: Query {}
@@ -18,6 +15,6 @@ impl<'a> Query for List {
     type Response = UsergroupsList;
 
     fn path(&self) -> &'static str {
-        "users.info"
+        "usergroups.list"
     }
 }
