@@ -22,7 +22,9 @@ use crate::{
     Client, Emojify,
 };
 
-static RE_USER: LazyLock<Regex> = LazyLock::new(|| Regex::new(r"<@([A-Z0-9]+)>").unwrap());
+static RE_USER: LazyLock<Regex> = LazyLock::new(|| Regex::new(r"<@([UW][A-Z0-9]+)>").unwrap());
+static RE_CHANNEL: LazyLock<Regex> =
+    LazyLock::new(|| Regex::new(r"<#(C[A-Z0-9]+)(\|.*)?>").unwrap());
 static RE_USERGROUP: LazyLock<Regex> =
     LazyLock::new(|| Regex::new(r"<!subteam\^([A-Z0-9]+)>").unwrap());
 static RE_LINK: LazyLock<Regex> = LazyLock::new(|| Regex::new(r"<([^|]+)\|([^>]+)?>").unwrap());
@@ -144,6 +146,7 @@ impl SlackMessage<Initialized<'_>> {
 
         let (user_name, body) = self.get_user_name_and_body(&client).await?;
         let body = self.replace_user_ids(&client, &body).await?;
+        let body = self.replace_channel_ids(&client, &body).await?;
         let body = self.replace_usergroups_ids(&client, &body).await?;
         let body = self.replace_links(&body)?;
 
@@ -255,6 +258,34 @@ impl SlackMessage<Initialized<'_>> {
                         new_text.push('@');
                         new_text.push_str(&handle.handle);
                         last = m.end().saturating_add(1); // remove the `>`
+                    }
+                }
+            }
+        }
+        new_text.push_str(&body[last..]);
+        Ok(new_text)
+    }
+
+    /// Replace the channel (`<#CID>`) to the actual channel name.
+    async fn replace_channel_ids(&self, client: &Client, body: &str) -> Result<String> {
+        let mut new_text = String::with_capacity(body.len());
+        let mut last = 0;
+
+        for cap in RE_CHANNEL.captures_iter(body) {
+            if let Some(m) = cap.get(1) {
+                if let Ok(response) =
+                    client.conversations(&ConversationsInfo { channel: m.as_str() }).await
+                {
+                    if let Some(channel) = response.channel {
+                        new_text.push_str(&body[last..m.start().saturating_sub(2)]); // remove the `<#`
+                        new_text.push('#');
+                        new_text.push_str(
+                            &channel.name_normalized.unwrap_or_else(|| "Unknown".to_string()),
+                        );
+                        last = m.end().saturating_add(match cap.get(2) {
+                            Some(s) => s.as_str().len() + 1,
+                            None => 1,
+                        }); // remove the `(|.*)?>`
                     }
                 }
             }
