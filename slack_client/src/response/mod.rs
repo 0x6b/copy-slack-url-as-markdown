@@ -1,5 +1,6 @@
 use std::fmt::Debug;
 
+pub mod bots;
 pub mod conversations;
 pub mod usergroups;
 pub mod users;
