@@ -56,7 +56,8 @@ pub struct Purpose {
 pub struct Block {
     #[serde(rename = "type")]
     pub block_type: BlockType,
-    pub elements: Option<Vec<RichTextElement>>,
+    pub elements: Option<Vec<RichTextElement>>, /* TODO: implement block types other than
+                                                 * RichTextElement */
 }
 
 impl Display for Block {
@@ -88,9 +89,9 @@ impl Display for Block {
 #[serde(rename_all = "snake_case")]
 pub enum BlockType {
     RichText,
-    Header,
-    Divider,
 
+    Header,  // not supported
+    Divider, // not supported
     Actions, // not supported
     Context, // not supported
     File,    // not supported
