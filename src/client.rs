@@ -2,6 +2,7 @@ use std::{ops::Deref, path::PathBuf};
 
 use anyhow::Result;
 use clap::Parser;
+use comrak::{markdown_to_html, ComrakOptions, RenderOptionsBuilder};
 use slack_client::{message, SlackMessage};
 use strum::EnumProperty;
 use tera::{Context, Tera};
@@ -121,6 +122,18 @@ impl Client<Initialized> {
                 .lines()
                 .collect::<Vec<_>>(),
         );
+
+        let mut comrak_options = ComrakOptions {
+            render: RenderOptionsBuilder::default().unsafe_(true).escape(false).build()?,
+            ..ComrakOptions::default()
+        };
+        comrak_options.extension.autolink = true;
+        comrak_options.extension.strikethrough = true;
+        comrak_options.extension.table = true;
+        comrak_options.extension.tasklist = true;
+        comrak_options.extension.tagfilter = true;
+        context
+            .insert(ContextKey::Html.as_ref(), &markdown_to_html(&message.body, &comrak_options));
 
         [
             Timestamp,

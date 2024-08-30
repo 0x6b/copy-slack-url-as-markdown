@@ -40,6 +40,15 @@ pub enum ContextKey {
     Text,
 
     #[strum(
+        serialize = "html",
+        props(
+            description = "The HTML version of the message",
+            example = "<p>Hello, world!</p>"
+        )
+    )]
+    Html,
+
+    #[strum(
         serialize = "timestamp",
         props(
             format = "%Y-%m-%d %H:%M:%S (%Z)",
