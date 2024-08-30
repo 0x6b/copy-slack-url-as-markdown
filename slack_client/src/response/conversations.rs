@@ -202,7 +202,7 @@ impl Display for RichTextElement {
                 result.push('>');
                 result
             }
-            RichTextElement::UserGroup { usergroup_id } => {
+            RichTextElement::Usergroup { usergroup_id } => {
                 let mut result = String::new();
                 result.push_str("<!subteam^");
                 result.push_str(usergroup_id);
