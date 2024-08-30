@@ -293,13 +293,12 @@ mod tests {
     #[test]
     fn list_context_keys_for_documentation() -> Result<()> {
         let datetime = jiff::Timestamp::from_microsecond(1724261952503309)?.intz("Asia/Tokyo")?;
-
-        println!("| Variable               | `strftime` Specifier     | Example                              | Description                                                                      |");
-        println!("|------------------------|--------------------------|--------------------------------------|----------------------------------------------------------------------------------|");
+        println!("| Variable         | [`jiff:fmt::strftime`](https://docs.rs/jiff/latest/jiff/fmt/strtime/) Specifier | Example                              | Description                                                                      |");
+        println!("|------------------|---------------------------------------------------------------------------------|--------------------------------------|----------------------------------------------------------------------------------|");
         ContextKey::VARIANTS.iter().for_each(|key| {
             println!(
-                "| {:22} | {:24} | {:36} | {:80} |",
-                format!("`{{{{ {} }}}}`", key.as_ref()),
+                "| {:16} | {:79} | {:36} | {:80} |",
+                format!("`{}`", key.as_ref()),
                 if let Some(format) = key.get_str("format") {
                     format!("`{format}`")
                 } else {
