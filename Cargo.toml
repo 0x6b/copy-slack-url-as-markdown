@@ -27,7 +27,6 @@ tokio = { version = "1.39.3", features = ["rt", "macros", "net", "rt-multi-threa
 # URL parsing
 url = "2.5.2"
 
-
 # Date and time
 jiff = "0.1.10"
 
@@ -38,6 +37,9 @@ strum_macros = "0.26.4"
 
 # Slack API client
 slack_client = { path = "slack_client" }
+
+# Markdown to HTML
+comrak = "0.27.0"
 
 [profile.dev]
 debug = 0
