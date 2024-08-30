@@ -25,7 +25,9 @@ async fn main() -> Result<()> {
 
     let url = match url::Url::parse(text.trim()) {
         Ok(u) => u,
-        Err(why) => bail!("The provided text '{text}' is not a valid URL: {why}"),
+        Err(why) => {
+            bail!("The provided text '{}...' is not a valid URL: {why}", text.split_at(40).0)
+        }
     };
 
     let message = match client.retrieve(&url).await {
