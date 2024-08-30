@@ -5,7 +5,8 @@ use serde_qs::to_string;
 
 use crate::{
     request::{
-        conversations::ConversationsQuery, usergroups::UsergroupsQuery, users::UsersQuery, Request,
+        bots::BotsQuery, conversations::ConversationsQuery, usergroups::UsergroupsQuery,
+        users::UsersQuery, Request,
     },
     response::Response,
 };
@@ -31,6 +32,14 @@ impl Client {
     pub async fn users<T>(&self, request: &T) -> Result<T::Response>
     where
         T: UsersQuery,
+    {
+        self.request(request).await
+    }
+
+    /// https://api.slack.com/methods/bots.* API
+    pub async fn bots<T>(&self, request: &T) -> Result<T::Response>
+    where
+        T: BotsQuery,
     {
         self.request(request).await
     }

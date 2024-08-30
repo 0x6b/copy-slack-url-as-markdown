@@ -38,7 +38,9 @@ impl Response for Conversations {
 #[derive(Deserialize, Debug)]
 pub struct Message {
     /// User ID of the author.
-    pub user: String,
+    pub user: Option<String>,
+    /// bot ID of the author.
+    pub bot_id: Option<String>,
     /// The text of the message.
     pub text: Option<String>,
     /// The Slack block kit blocks of the message.
@@ -82,46 +84,17 @@ pub enum BlockType {
 #[derive(Debug, Deserialize, Clone)]
 #[serde(tag = "type", rename_all = "snake_case")]
 pub enum RichTextElement {
-    RichTextSection {
-        elements: Vec<RichTextElement>,
-    },
-    RichTextQuote {
-        elements: Vec<RichTextElement>,
-    },
-    RichTextList {
-        style: ListStyle,
-        indent: i64,
-        elements: Vec<RichTextElement>,
-    },
-    RichTextPreformatted {
-        elements: Vec<RichTextElement>,
-    },
-    Emoji {
-        name: String,
-        style: Option<Style>,
-    },
-    Text {
-        text: String,
-        style: Option<Style>,
-    },
-    Link {
-        url: String,
-        text: Option<String>,
-    },
-    User {
-        user_id: String,
-    },
-    #[serde(rename = "usergroup")]
-    UserGroup {
-        usergroup_id: String,
-    },
-    Broadcast {
-        range: String,
-    },
-    Channel {
-        channel_id: String,
-        style: Option<Style>,
-    },
+    RichTextSection { elements: Vec<RichTextElement> },
+    RichTextQuote { elements: Vec<RichTextElement> },
+    RichTextList { style: ListStyle, indent: i64, elements: Vec<RichTextElement> },
+    RichTextPreformatted { elements: Vec<RichTextElement> },
+    Emoji { name: String, style: Option<Style> },
+    Text { text: String, style: Option<Style> },
+    Link { url: String, text: Option<String> },
+    User { user_id: String },
+    Usergroup { usergroup_id: String },
+    Broadcast { range: String },
+    Channel { channel_id: String, style: Option<Style> },
 }
 
 impl Display for RichTextElement {

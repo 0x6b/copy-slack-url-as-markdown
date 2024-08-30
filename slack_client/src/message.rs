@@ -10,6 +10,7 @@ use url::Url;
 
 use crate::{
     request::{
+        bots::Info as BotsInfo,
         conversations::{History, Info as ConversationsInfo, Replies},
         usergroups::List,
         users::Info as UsersInfo,
@@ -175,7 +176,8 @@ impl SlackMessage<Initialized<'_>> {
             .messages;
 
         let get_id_and_body = |messages: Vec<Message>| {
-            let id = messages.last().unwrap().user.clone();
+            let user_id = messages.last().unwrap().user.clone();
+            let bot_id = messages.last().unwrap().bot_id.clone();
             let body = messages
                 .into_iter()
                 .flat_map(|m| match m.blocks {
@@ -185,10 +187,10 @@ impl SlackMessage<Initialized<'_>> {
                     None => vec![m.text.unwrap_or_default()],
                 })
                 .collect::<Vec<String>>();
-            (id, body)
+            (user_id, bot_id, body)
         };
 
-        let (user_id, body) = match history {
+        let (user_id, bot_id, body) = match history {
             Some(messages) if !messages.is_empty() => get_id_and_body(messages),
             Some(_) => {
                 // If the message didn't send to the main channel, the response of the
@@ -215,11 +217,17 @@ impl SlackMessage<Initialized<'_>> {
             }
         };
 
-        let user = match client.users(&UsersInfo { id: &user_id }).await?.user {
-            Some(user) => user,
-            None => bail!("User not found: {}", user_id),
+        let user_name = match (user_id, bot_id) {
+            (Some(user_id), _) => match client.users(&UsersInfo { id: &user_id }).await?.user {
+                Some(user) => self.get_user_name(user),
+                None => bail!("User not found: {:?}", user_id),
+            },
+            (None, Some(bot_id)) => match client.bots(&BotsInfo { id: &bot_id }).await?.bot {
+                Some(bot) => bot.name,
+                None => bail!("Bot not found: {:?}", bot_id),
+            },
+            (None, None) => bail!("No user or bot found"),
         };
-        let user_name = self.get_user_name(user);
 
         Ok((user_name, body.into_iter().last().unwrap_or("".to_string()).emojify()))
     }
