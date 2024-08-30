@@ -98,6 +98,7 @@ pub enum RichTextElement {
     RichTextPreformatted { elements: Vec<RichTextElement> },
     Emoji { name: String, style: Option<Style> },
     Text { text: String, style: Option<Style> },
+    Mrkdwn { text: String, style: Option<Style> },
     Link { url: String, text: Option<String> },
     User { user_id: String },
     Usergroup { usergroup_id: String },
@@ -155,6 +156,31 @@ impl Display for RichTextElement {
                 result
             }
             RichTextElement::Text { text, style } => {
+                let mut result = String::new();
+                match style {
+                    Some(Style { code, bold, italic, strike }) => {
+                        let (code, bold, italic, strike) = (
+                            code.unwrap_or_default(),
+                            bold.unwrap_or_default(),
+                            italic.unwrap_or_default(),
+                            strike.unwrap_or_default(),
+                        );
+                        result.push_str(
+                            &Some(text.to_string())
+                                .map(|t| if code { format!("`{}`", t) } else { t })
+                                .map(|t| if bold { format!("**{}**", t) } else { t })
+                                .map(|t| if italic { format!("_{}_", t) } else { t })
+                                .map(|t| if strike { format!("~~{}~~", t) } else { t })
+                                .unwrap(),
+                        );
+                    }
+                    None => {
+                        result.push_str(text);
+                    }
+                }
+                result
+            }
+            RichTextElement::Mrkdwn { text, style } => {
                 let mut result = String::new();
                 match style {
                     Some(Style { code, bold, italic, strike }) => {
