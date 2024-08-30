@@ -97,6 +97,10 @@ The pre-defined variables, which you can use in the template i.e., `{{ variable 
 
 See [`assets/templates`](assets/templates) for the default templates.
 
+## Limitations
+
+For quoting, only [Rich text block](https://api.slack.com/reference/block-kit/blocks#rich_text) is supported. Other types will be just ignored.
+
 ## License
 
 MIT. See [LICENSE](LICENSE) for details.
@@ -106,6 +110,7 @@ MIT. See [LICENSE](LICENSE) for details.
 - [Web API methods | Slack](https://api.slack.com/methods)
 - [Token types | Slack](https://api.slack.com/concepts/token-types)
 - [Permission scopes | Slack](https://api.slack.com/scopes)
+- [Reference: blocks | Slack](https://api.slack.com/reference/block-kit/blocks#user-element-type)
 - [Tera](https://keats.github.io/tera/)
 
 ## Privacy
