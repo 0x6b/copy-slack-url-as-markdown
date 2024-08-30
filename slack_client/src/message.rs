@@ -176,7 +176,15 @@ impl SlackMessage<Initialized<'_>> {
 
         let get_id_and_body = |messages: Vec<Message>| {
             let id = messages.last().unwrap().user.clone();
-            let body = messages.into_iter().filter_map(|m| m.text).collect::<Vec<String>>();
+            let body = messages
+                .into_iter()
+                .flat_map(|m| match m.blocks {
+                    Some(blocks) => {
+                        blocks.into_iter().map(|b| b.to_string()).collect::<Vec<String>>()
+                    }
+                    None => vec![m.text.unwrap_or_default()],
+                })
+                .collect::<Vec<String>>();
             (id, body)
         };
 
