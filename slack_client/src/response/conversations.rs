@@ -164,7 +164,9 @@ impl Display for RichTextElement {
             }
             RichTextElement::Emoji { name, style: _style } => {
                 let mut result = String::new();
+                result.push(':');
                 result.push_str(name);
+                result.push(':');
                 result
             }
             RichTextElement::Text { text, style } => {
