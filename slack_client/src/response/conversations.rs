@@ -79,6 +79,14 @@ pub enum BlockType {
     RichText,
     Header,
     Divider,
+
+    Actions, // not supported
+    Context, // not supported
+    File,    // not supported
+    Image,   // not supported
+    Input,   // not supported
+    Section, // not supported
+    Video,   // not supported}
 }
 
 #[derive(Debug, Deserialize, Clone)]
