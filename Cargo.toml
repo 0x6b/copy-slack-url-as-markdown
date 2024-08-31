@@ -9,7 +9,7 @@ name = "s2m"
 path = "src/main.rs"
 
 [workspace]
-members = ["slack_client", "xtask"]
+members = ["slack_client"]
 
 [dependencies]
 # Error handling
