@@ -1,14 +1,17 @@
 use anyhow::{bail, Result};
+use clap::Parser;
 
-use crate::client::Client;
+use crate::{args::Args, client::Client};
 
+mod args;
 mod client;
 mod state;
 mod template;
 
 #[tokio::main]
 async fn main() -> Result<()> {
-    let client = match Client::new().await {
+    let args = Args::parse();
+    let client = match Client::from(args.into()).await {
         Ok(c) => c,
         Err(why) => bail!("failed to initialize client: {why}"),
     };
