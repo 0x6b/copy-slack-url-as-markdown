@@ -1875,6 +1875,7 @@ dependencies = [
 [[package]]
 name = "slack_client"
 version = "0.1.0"
+source = "git+https://github.com/0x6b/slack_client?tag=v0.1.0#a4757d323a4c2712ed20018a9d7978314d1ab110"
 dependencies = [
  "anyhow",
  "mrkdwn2markdown",
