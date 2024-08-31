@@ -375,6 +375,7 @@ impl SlackMessage<Initialized<'_>> {
             .ok_or(anyhow!("Failed to get path segments"))?
             .last()
             .ok_or(anyhow!("Failed to get the last path segment"))?;
+
         let num = ts.trim_start_matches(|c: char| !c.is_numeric());
         let (int_part, decimal_part) = num.split_at(num.len() - 6);
         let ts64 = format!("{int_part}.{decimal_part}").parse::<f64>()?;
