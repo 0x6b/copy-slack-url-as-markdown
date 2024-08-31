@@ -55,6 +55,10 @@ impl<'a> SlackMessage<Uninitialized<'_>> {
     /// - `url` - The URL of the message.
     /// - `token` - The Slack API token.
     pub fn try_new(url: &'a Url, token: &'a str) -> Result<SlackMessage<Initialized<'a>>> {
+        if !url.domain().unwrap_or_default().ends_with("slack.com") {
+            bail!("No Slack URL: {url}");
+        }
+
         let (channel_id, ts, ts64, thread_ts64) = Self::parse(url)?;
         let client = Client::new(token)?;
         Ok(SlackMessage {
