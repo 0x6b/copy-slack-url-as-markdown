@@ -1,6 +1,6 @@
 use std::ops::{Deref, DerefMut};
 
-use anyhow::{anyhow, bail, Error};
+use anyhow::{anyhow, bail, Error, Result};
 use url::Url;
 
 use crate::{
@@ -50,7 +50,7 @@ where
 impl<'a> TryFrom<&'a Url> for SlackMessage<Initialized<'a>> {
     type Error = Error;
 
-    fn try_from(url: &'a Url) -> anyhow::Result<SlackMessage<Initialized<'a>>> {
+    fn try_from(url: &'a Url) -> Result<SlackMessage<Initialized<'a>>> {
         let (channel_id, ts, ts64, thread_ts64) = Self::parse(url)?;
         Ok(SlackMessage {
             state: Initialized {
@@ -71,7 +71,7 @@ impl SlackMessage<Initialized<'_>> {
     /// # Arguments
     ///
     /// - `token` - The Slack API token.
-    pub async fn resolve(&mut self, token: &str) -> anyhow::Result<SlackMessage<Resolved>> {
+    pub async fn resolve(&mut self, token: &str) -> Result<SlackMessage<Resolved>> {
         let client = Client::new(token)?;
 
         let channel_name = match client
@@ -121,7 +121,7 @@ impl SlackMessage<Initialized<'_>> {
     }
 
     /// Get the body of the message and the user name who posted the message.
-    async fn get_user_name_and_body(&self, client: &Client) -> anyhow::Result<(String, String)> {
+    async fn get_user_name_and_body(&self, client: &Client) -> Result<(String, String)> {
         let history = client
             .conversations(&History {
                 channel: self.channel_id,
@@ -195,7 +195,7 @@ impl SlackMessage<Initialized<'_>> {
     }
 
     /// Replace the user mentions (`<@ID>`) to the actual user name.
-    async fn replace_user_ids(&self, client: &Client, body: &str) -> anyhow::Result<String> {
+    async fn replace_user_ids(&self, client: &Client, body: &str) -> Result<String> {
         let mut new_text = String::with_capacity(body.len());
         let mut last = 0;
 
@@ -219,11 +219,7 @@ impl SlackMessage<Initialized<'_>> {
     }
 
     /// Replace the usergroup mentions (`<!subteam^ID>`) to the actual usergroup handle.
-    async fn replace_usergroups_ids(
-        &mut self,
-        client: &Client,
-        body: &str,
-    ) -> anyhow::Result<String> {
+    async fn replace_usergroups_ids(&mut self, client: &Client, body: &str) -> Result<String> {
         let mut new_text = String::with_capacity(body.len());
         let mut last = 0;
 
@@ -253,7 +249,7 @@ impl SlackMessage<Initialized<'_>> {
     }
 
     /// Replace the channel (`<#CID>`) to the actual channel name.
-    async fn replace_channel_ids(&self, client: &Client, body: &str) -> anyhow::Result<String> {
+    async fn replace_channel_ids(&self, client: &Client, body: &str) -> Result<String> {
         let mut new_text = String::with_capacity(body.len());
         let mut last = 0;
 
@@ -292,7 +288,7 @@ impl SlackMessage<Initialized<'_>> {
 
     /// Replace the mrkdwn format of the links (`<url|title>`) to the markdown format
     /// (`[title](url)`).
-    fn replace_links(&self, body: &str) -> anyhow::Result<String> {
+    fn replace_links(&self, body: &str) -> Result<String> {
         let mut new_text = String::with_capacity(body.len());
         let mut last = 0;
 
@@ -334,7 +330,7 @@ impl SlackMessage<Initialized<'_>> {
     /// A tuple containing the channel ID (from path segments), timestamp as &str (from another path
     /// segment), timestamp in f64 (parsed the timestamp as f64), and thread timestamp (from query
     /// parameters).
-    fn parse(url: &Url) -> anyhow::Result<(&str, &str, f64, Option<f64>)> {
+    fn parse(url: &Url) -> Result<(&str, &str, f64, Option<f64>)> {
         let channel_id = url
             .path_segments()
             .ok_or(anyhow!("Failed to get path segments"))?
