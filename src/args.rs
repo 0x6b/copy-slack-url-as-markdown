@@ -20,15 +20,19 @@ pub struct Args {
 
     #[command(flatten)]
     pub templates: Templates,
+
+    /// Slack message URL to process. Leave empty to use the clipboard.
+    #[arg()]
+    pub url: Option<String>,
 }
 
-impl From<Args> for Uninitialized {
-    fn from(args: Args) -> Self {
+impl From<&Args> for Uninitialized {
+    fn from(args: &Args) -> Self {
         Self {
-            token: args.token,
+            token: args.token.clone(),
             quote: args.quote,
-            timezone: args.timezone,
-            templates: args.templates,
+            timezone: args.timezone.clone(),
+            templates: args.templates.clone(),
         }
     }
 }

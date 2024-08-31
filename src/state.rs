@@ -38,7 +38,7 @@ pub struct Uninitialized {
 }
 
 /// Templates for the client.
-#[derive(Parser)]
+#[derive(Parser, Clone)]
 pub struct Templates {
     /// Path to the template file or a string for plain text (without quote). Leave empty to use
     /// the default.
