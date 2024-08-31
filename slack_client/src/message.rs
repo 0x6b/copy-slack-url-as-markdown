@@ -25,7 +25,7 @@ use crate::{
 
 static RE_USER: LazyLock<Regex> = LazyLock::new(|| Regex::new(r"<@([UW][A-Z0-9]+)>").unwrap());
 static RE_CHANNEL: LazyLock<Regex> =
-    LazyLock::new(|| Regex::new(r"<#(C[A-Z0-9]+)(\|.*)?>").unwrap());
+    LazyLock::new(|| Regex::new(r"<#([CG][A-Z0-9]+)(\|.*)?>").unwrap());
 static RE_USERGROUP: LazyLock<Regex> =
     LazyLock::new(|| Regex::new(r"<!subteam\^([A-Z0-9]+)>").unwrap());
 static RE_LINK: LazyLock<Regex> = LazyLock::new(|| Regex::new(r"<([^|]+)\|([^>]+)?>").unwrap());
@@ -304,6 +304,14 @@ impl SlackMessage<Initialized<'_>> {
                             None => 1,
                         }); // remove the `(|.*)?>`
                     }
+                } else {
+                    println!("Failed to get channel: {}", m.as_str());
+                    new_text.push_str(&body[last..m.start().saturating_sub(2)]); // remove the `<#`
+                    new_text.push_str("**#private channel**");
+                    last = m.end().saturating_add(match cap.get(2) {
+                        Some(s) => s.as_str().len() + 1,
+                        None => 1,
+                    });
                 }
             }
         }
