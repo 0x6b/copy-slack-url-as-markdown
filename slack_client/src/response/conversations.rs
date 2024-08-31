@@ -168,7 +168,7 @@ impl Display for RichTextElement {
                 result.push(':');
                 result
             }
-            RichTextElement::Text { text, style } => {
+            RichTextElement::Text { text, style } | RichTextElement::Mrkdwn { text, style } => {
                 let mut result = String::new();
                 match style {
                     Some(Style { code, bold, italic, strike }) => {
