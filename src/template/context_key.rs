@@ -1,5 +1,14 @@
 use strum_macros::{AsRefStr, EnumProperty, VariantArray};
 
+/// The key of the context that can be used in the template.
+///
+/// The following `strum` attributes are used to generate the documentation:
+///
+/// - `serialize`: The key name that can be used in the template.
+/// - `props`: The properties of the key.
+///     - `description`: The description of the key.
+///     - `example`: The example of the value when the key is used in the template.
+///     - `format`: The jiff::strftime format specifier for the key.
 #[rustfmt::skip]
 #[derive(AsRefStr, EnumProperty, VariantArray, Debug)]
 pub enum ContextKey {
