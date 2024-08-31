@@ -1,16 +1,18 @@
 use std::ops::{Deref, DerefMut};
 
 use anyhow::{anyhow, bail, Result};
+use serde::Deserialize;
 use url::Url;
 
 use crate::{
     message::{
+        emojify::Emojify,
         state::{Initialized, Resolved, State, Uninitialized},
-        QueryParams, RE_CHANNEL, RE_LINK, RE_SPECIAL_MENTION, RE_USER, RE_USERGROUP,
+        RE_CHANNEL, RE_LINK, RE_SPECIAL_MENTION, RE_USER, RE_USERGROUP,
     },
     request::{bots, conversations, usergroups, users},
     response::{conversations::Message, users::User},
-    Client, Emojify,
+    Client,
 };
 
 #[derive(Debug)]
@@ -100,6 +102,12 @@ impl<'a> SlackMessage<Uninitialized<'_>> {
 
         Ok((channel_id, num, ts64, params.thread_ts))
     }
+}
+
+// Just for extracting `thread_ts` from the query parameters.
+#[derive(Deserialize, Debug, Clone, Copy)]
+struct QueryParams {
+    thread_ts: Option<f64>,
 }
 
 impl SlackMessage<Initialized<'_>> {

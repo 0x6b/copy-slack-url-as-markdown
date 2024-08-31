@@ -3,7 +3,7 @@ use std::{collections::BTreeMap, sync::LazyLock};
 use regex::Regex;
 use serde_json::from_slice;
 
-static DATA: &[u8] = include_bytes!("../../assets/emoji.json");
+static DATA: &[u8] = include_bytes!("../../../assets/emoji.json");
 static TABLE: LazyLock<BTreeMap<&str, &str>> =
     LazyLock::new(|| from_slice::<BTreeMap<&str, &str>>(DATA).unwrap());
 static RE_EMOJI: LazyLock<Regex> = LazyLock::new(|| Regex::new(r"(:[a-zA-Z0-9\-_+]+:)").unwrap());
