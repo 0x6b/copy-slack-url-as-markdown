@@ -3,27 +3,27 @@ use std::{ops::Deref, path::PathBuf};
 use anyhow::Result;
 use comrak::{markdown_to_html, ComrakOptions, RenderOptionsBuilder};
 use slack_client::{message::state::Resolved as MessageResolved, SlackMessage};
+use state::{Initialized, Retrieved, State, Templates, Uninitialized};
 use strum::EnumProperty;
 use tera::{Context, Tera};
 use tokio::fs::read_to_string;
 
-use crate::{
-    state::{Initialized, Retrieved, State, Templates, Uninitialized},
-    template::{
-        ContextKey,
-        ContextKey::{
-            AmPm, AmPmLower, ChannelName, Clock, Day, DaySpace, Hour12, Hour24, IsoDate, Minute,
-            Month, Month2Digit, MonthAbbrev, Offset, OffsetColon, Second, Timestamp, TzAbbrev,
-            TzIana, Url, UserName, Weekday, WeekdayAbbrev, Year, Year2Digit,
-        },
-        TemplateType::{RichText, RichTextQuote, Text, TextQuote},
+use crate::template::{
+    ContextKey,
+    ContextKey::{
+        AmPm, AmPmLower, ChannelName, Clock, Day, DaySpace, Hour12, Hour24, IsoDate, Minute, Month,
+        Month2Digit, MonthAbbrev, Offset, OffsetColon, Second, Timestamp, TzAbbrev, TzIana, Url,
+        UserName, Weekday, WeekdayAbbrev, Year, Year2Digit,
     },
+    TemplateType::{RichText, RichTextQuote, Text, TextQuote},
 };
 
-const TEMPLATE_TEXT: &str = include_str!("../assets/templates/text");
-const TEMPLATE_TEXT_QUOTE: &str = include_str!("../assets/templates/text_quote");
-const TEMPLATE_RICH_TEXT: &str = include_str!("../assets/templates/rich_text");
-const TEMPLATE_RICH_TEXT_QUOTE: &str = include_str!("../assets/templates/rich_text_quote");
+pub mod state;
+
+const TEMPLATE_TEXT: &str = include_str!("../../assets/templates/text");
+const TEMPLATE_TEXT_QUOTE: &str = include_str!("../../assets/templates/text_quote");
+const TEMPLATE_RICH_TEXT: &str = include_str!("../../assets/templates/rich_text");
+const TEMPLATE_RICH_TEXT_QUOTE: &str = include_str!("../../assets/templates/rich_text_quote");
 
 pub struct Client<S>
 where
