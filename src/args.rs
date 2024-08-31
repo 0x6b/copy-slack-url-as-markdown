@@ -1,6 +1,6 @@
 use clap::Parser;
 
-use crate::state::{Templates, Uninitialized};
+use crate::{client::state::Uninitialized, template::Templates};
 
 /// The CLI arguments.
 #[derive(Parser)]

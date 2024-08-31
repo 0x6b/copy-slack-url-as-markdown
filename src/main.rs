@@ -5,7 +5,6 @@ use crate::{args::Args, client::Client};
 
 mod args;
 mod client;
-mod state;
 mod template;
 
 #[tokio::main]

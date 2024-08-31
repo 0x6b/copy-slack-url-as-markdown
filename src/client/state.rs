@@ -1,5 +1,6 @@
-use clap::Parser;
 use tera::{Context, Tera};
+
+use crate::template::Templates;
 
 /// A marker trait for the state of the client.
 ///
@@ -35,30 +36,6 @@ pub struct Uninitialized {
     pub timezone: String,
 
     pub templates: Templates,
-}
-
-/// Templates for the client.
-#[derive(Parser, Clone)]
-pub struct Templates {
-    /// Path to the template file or a string for plain text (without quote). Leave empty to use
-    /// the default.
-    #[arg(long, env = "TEMPLATE_TEXT")]
-    pub text: Option<String>,
-
-    /// Path to the template file or a string for plain text (with quote). Leave empty to use the
-    /// default.
-    #[arg(long, env = "TEMPLATE_TEXT_QUOTE")]
-    pub text_quote: Option<String>,
-
-    /// Path to the template file or a string for rich text (without quote). Leave empty to use the
-    /// default.
-    #[arg(long, env = "TEMPLATE_RICH_TEXT")]
-    pub rich_text: Option<String>,
-
-    /// Path to the template file or a string for rich text (with quote). Leave empty to use the
-    /// template.
-    #[arg(long, env = "TEMPLATE_RICH_TEXT_QUOTE")]
-    pub rich_text_quote: Option<String>,
 }
 
 /// Initialized state of the client.
