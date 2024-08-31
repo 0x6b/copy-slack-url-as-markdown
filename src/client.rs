@@ -45,6 +45,7 @@ where
 }
 
 impl Client<Uninitialized> {
+    /// Create a new Copier client with the given CLI arguments.
     pub async fn new() -> Result<Client<Initialized>> {
         let Uninitialized { token, quote, timezone, templates } = CliArgs::parse();
 
@@ -58,6 +59,8 @@ impl Client<Uninitialized> {
         })
     }
 
+    // Set up the Tera template engine with the given [`Templates`], which might contain paths to
+    // the template file, or just the template string.
     #[rustfmt::skip]
     async fn setup_tera(arg: &Templates) -> Result<Tera> {
         let mut tera = Tera::default();
@@ -74,13 +77,18 @@ impl Client<Uninitialized> {
         Ok(tera)
     }
 
+    // Resolve the template content from the given pathlike. If the pathlike is not a valid path,
+    // then return content as is assuming it's a template string. If no pathlike is given, then
+    // return the default template string.
     async fn get_template<'a>(input: &'a Option<String>, default: &'a str) -> &'a str {
         match input {
             Some(pathlike) => {
                 if PathBuf::from(&pathlike).exists() {
                     let content = read_to_string(&pathlike).await.unwrap_or_default();
+                    // Leak the content to make it have a static lifetime.
                     Box::leak(content.into_boxed_str())
                 } else {
+                    // Leak the content to make it have a static lifetime.
                     Box::leak(pathlike.clone().into_boxed_str())
                 }
             }
@@ -90,6 +98,11 @@ impl Client<Uninitialized> {
 }
 
 impl Client<Initialized> {
+    /// Retrieve a Slack message from the given URL.
+    ///
+    /// # Arguments
+    ///
+    /// - `url`: The [`url::URL`] of the Slack message.
     pub async fn retrieve(&self, url: &url::Url) -> Result<Client<Retrieved>> {
         let mut message: SlackMessage<message::Initialized> = SlackMessage::try_from(url)?;
         let message: SlackMessage<message::Resolved> = message.resolve(&self.token).await?;
@@ -103,6 +116,7 @@ impl Client<Initialized> {
         })
     }
 
+    // Set up the Tera template context from the Slack message just retrieved.
     async fn setup_context(
         message: &SlackMessage<message::Resolved<'_>>,
         timezone: &str,
@@ -172,6 +186,11 @@ impl Client<Initialized> {
 }
 
 impl Client<Retrieved> {
+    /// Render the Slack message into a rich text and a plain text.
+    ///
+    /// # Returns
+    ///
+    /// A tuple of the rich text and the plain text [`String`].
     pub fn render(&self) -> Result<(String, String)> {
         let (rich_text, text) = if self.quote {
             (
