@@ -25,7 +25,7 @@ use crate::{
 
 static RE_USER: LazyLock<Regex> = LazyLock::new(|| Regex::new(r"<@([UW][A-Z0-9]+)>").unwrap());
 static RE_CHANNEL: LazyLock<Regex> =
-    LazyLock::new(|| Regex::new(r"<#(C[A-Z0-9]+)(\|.*)?>").unwrap());
+    LazyLock::new(|| Regex::new(r"<#([CG][A-Z0-9]+)(\|.*)?>").unwrap());
 static RE_USERGROUP: LazyLock<Regex> =
     LazyLock::new(|| Regex::new(r"<!subteam\^([A-Z0-9]+)>").unwrap());
 static RE_LINK: LazyLock<Regex> = LazyLock::new(|| Regex::new(r"<([^|]+)\|([^>]+)?>").unwrap());
@@ -181,9 +181,7 @@ impl SlackMessage<Initialized<'_>> {
             let body = messages
                 .into_iter()
                 .flat_map(|m| match m.blocks {
-                    Some(blocks) => {
-                        blocks.into_iter().map(|b| b.to_string()).collect::<Vec<String>>()
-                    }
+                    Some(blocks) => blocks.iter().map(|b| b.to_string()).collect::<Vec<String>>(),
                     None => vec![m.text.unwrap_or_default()],
                 })
                 .collect::<Vec<String>>();
@@ -306,6 +304,14 @@ impl SlackMessage<Initialized<'_>> {
                             None => 1,
                         }); // remove the `(|.*)?>`
                     }
+                } else {
+                    println!("Failed to get channel: {}", m.as_str());
+                    new_text.push_str(&body[last..m.start().saturating_sub(2)]); // remove the `<#`
+                    new_text.push_str("**#private channel**");
+                    last = m.end().saturating_add(match cap.get(2) {
+                        Some(s) => s.as_str().len() + 1,
+                        None => 1,
+                    });
                 }
             }
         }
@@ -322,11 +328,11 @@ impl SlackMessage<Initialized<'_>> {
         for cap in RE_LINK.captures_iter(body) {
             if let (Some(url), Some(title)) = (cap.get(1), cap.get(2)) {
                 new_text.push_str(&body[last..url.start().saturating_sub(1)]); // remove the `<`
-                new_text.push('"');
+                new_text.push('[');
                 new_text.push_str(title.as_str());
-                new_text.push_str(r#"" <"#);
+                new_text.push_str(r#"]("#);
                 new_text.push_str(url.as_str());
-                new_text.push('>');
+                new_text.push(')');
                 last = title.end().saturating_add(1); // remove the `>`
             }
         }
