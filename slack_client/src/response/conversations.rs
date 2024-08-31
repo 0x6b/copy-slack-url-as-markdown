@@ -226,8 +226,9 @@ impl Display for RichTextElement {
             }
             RichTextElement::Broadcast { range } => {
                 let mut result = String::new();
-                result.push('@');
+                result.push_str("<!");
                 result.push_str(range);
+                result.push('>');
                 result
             }
             RichTextElement::Channel { channel_id, style: _style } => {
