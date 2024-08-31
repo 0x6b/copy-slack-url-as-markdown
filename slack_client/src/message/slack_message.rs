@@ -66,7 +66,7 @@ impl<'a> TryFrom<&'a Url> for SlackMessage<Initialized<'a>> {
 }
 
 impl SlackMessage<Initialized<'_>> {
-    /// Resolve the channel name, user name, and the body of the message.
+    /// Resolve the channel name, user name, and the body of the message with given Slack API token.
     ///
     /// # Arguments
     ///
