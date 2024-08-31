@@ -319,8 +319,8 @@ impl SlackMessage<Initialized<'_>> {
         Ok(new_text)
     }
 
-    /// Replace the mrkdown format of the links (`<url|title>`) to more readable format (`"title"
-    /// <url>`) for both plain text and the HTML.
+    /// Replace the mrkdwn format of the links (`<url|title>`) to the markdown format
+    /// (`[title](url)`).
     fn replace_links(&self, body: &str) -> Result<String> {
         let mut new_text = String::with_capacity(body.len());
         let mut last = 0;
