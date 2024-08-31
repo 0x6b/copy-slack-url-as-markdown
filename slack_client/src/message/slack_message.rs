@@ -8,14 +8,8 @@ use crate::{
         state::{Initialized, Resolved, State, Uninitialized},
         QueryParams, RE_CHANNEL, RE_LINK, RE_USER, RE_USERGROUP,
     },
-    request::{
-        conversations::{History, Replies},
-        usergroups::List,
-    },
-    response::{
-        conversations::{Message, Purpose},
-        users::User,
-    },
+    request::{bots, conversations, usergroups, users},
+    response::{conversations::Message, users::User},
     Client, Emojify,
 };
 
@@ -116,40 +110,13 @@ impl SlackMessage<Initialized<'_>> {
     ///
     /// - `token` - The Slack API token.
     pub async fn resolve(&mut self) -> Result<SlackMessage<Resolved>> {
-        let channel_name = match self
-            .client
-            .conversations(&crate::request::conversations::Info { channel: self.channel_id })
-            .await?
-            .channel
-        {
-            Some(channel) => match (channel.is_im, channel.is_mpim) {
-                (Some(true), _) => {
-                    format!(
-                        "DM with {}",
-                        self.client
-                            .users(&crate::request::users::Info { id: &channel.user.unwrap() })
-                            .await?
-                            .user
-                            .unwrap()
-                            .profile
-                            .display_name
-                    )
-                }
-                (_, Some(true)) => {
-                    channel
-                        .purpose
-                        .unwrap_or_else(|| Purpose { value: "Unknown".to_string() })
-                        .value
-                }
-                _ => channel.name_normalized.unwrap_or_else(|| "Unknown".to_string()),
-            },
-            None => bail!("Channel not found: {}", self.channel_id),
-        };
-
-        let (user_name, body) = self.get_user_name_and_body().await?;
+        let channel_name = self.get_channel_name().await?;
+        let messages = self.get_messages().await?;
+        let user_name = self.determine_user_name(&messages).await?;
+        let body = self.messages_to_body(&messages).await;
         let body = self.replace_user_ids(&body).await?;
-        let body = self.replace_channel_ids(&body).await?;
         let body = self.replace_usergroups_ids(&body).await?;
+        let body = self.replace_channel_ids(&body).await?;
         let body = self.replace_links(&body)?;
 
         Ok(SlackMessage {
@@ -163,11 +130,55 @@ impl SlackMessage<Initialized<'_>> {
         })
     }
 
-    /// Get the body of the message and the user name who posted the message.
-    async fn get_user_name_and_body(&self) -> Result<(String, String)> {
+    /// Get the channel name from the Slack API. The name will be different based on the
+    /// conversation type.
+    ///
+    /// - If the conversation is a direct message, then the name will be the display name of the
+    ///   user.
+    /// - If the conversation is a multi-party direct message, then the name will be the purpose of
+    ///   the conversation.
+    /// - The name will be the normalized name of the channel otherwise.
+    async fn get_channel_name(&self) -> Result<String> {
+        let channel = match self
+            .client
+            .conversations(&conversations::Info { channel: self.channel_id })
+            .await?
+            .channel
+        {
+            Some(channel) => channel,
+            None => bail!("Channel not found: {}", self.channel_id),
+        };
+
+        if channel.is_im.unwrap_or_default() {
+            let user = match self
+                .client
+                .users(&users::Info { id: &channel.user.unwrap_or_default() })
+                .await?
+                .user
+            {
+                Some(user) => user.profile.display_name,
+                None => "UNKNOWN".to_string(),
+            };
+            return Ok(format!("DM with {user}"));
+        }
+
+        if channel.is_mpim.unwrap_or_default() {
+            return match channel.purpose {
+                Some(purpose) => Ok(purpose.value),
+                None => Ok("UNKNOWN".to_string()),
+            };
+        }
+
+        Ok(channel.name_normalized.unwrap_or_else(|| "UNKNOWN".to_string()))
+    }
+
+    /// Get the messages from the Slack API. If the message didn't send to the main channel, the
+    /// response of the `conversation.history` will be blank. I'm not sure why. Try to fetch using
+    /// `conversation.replies` API instead.
+    async fn get_messages(&self) -> Result<Vec<Message>> {
         let history = self
             .client
-            .conversations(&History {
+            .conversations(&conversations::History {
                 channel: self.channel_id,
                 latest: self.ts64,
                 oldest: self.ts64,
@@ -177,72 +188,71 @@ impl SlackMessage<Initialized<'_>> {
             .await?
             .messages;
 
-        let get_id_and_body = |messages: Vec<Message>| {
-            let user_id = messages.last().unwrap().user.clone();
-            let bot_id = messages.last().unwrap().bot_id.clone();
-            let body = messages
-                .into_iter()
-                .flat_map(|m| match m.blocks {
-                    Some(blocks) => blocks.iter().map(|b| b.to_string()).collect::<Vec<String>>(),
-                    None => vec![m.text.unwrap_or_default()],
-                })
-                .collect::<Vec<String>>();
-            (user_id, bot_id, body)
-        };
-
-        let (user_id, bot_id, body) = match history {
-            Some(messages) if !messages.is_empty() => get_id_and_body(messages),
-            Some(_) => {
-                // If the message didn't send to the main channel, the response of the
-                // conversation.history will be blank. I'm not sure why. Try to
-                // fetch using conversation.replies
-                let messages = self
-                    .client
-                    .conversations(&Replies {
-                        channel: self.channel_id,
-                        ts: self.thread_ts64.unwrap_or(self.ts64),
-                        latest: self.ts64,
-                        oldest: self.ts64,
-                        limit: 1,
-                        inclusive: true,
-                    })
-                    .await?
-                    .messages;
-                match messages {
-                    Some(messages) => get_id_and_body(messages),
-                    None => bail!("No messages found"),
-                }
+        if let Some(messages) = history {
+            if !messages.is_empty() {
+                return Ok(messages);
             }
-            None => {
-                bail!("No messages found")
-            }
-        };
 
-        let user_name = match (user_id, bot_id) {
-            (Some(user_id), _) => match self
+            let messages = self
                 .client
-                .users(&crate::request::users::Info { id: &user_id })
+                .conversations(&conversations::Replies {
+                    channel: self.channel_id,
+                    ts: self.thread_ts64.unwrap_or(self.ts64),
+                    latest: self.ts64,
+                    oldest: self.ts64,
+                    limit: 1,
+                    inclusive: true,
+                })
                 .await?
-                .user
-            {
-                Some(user) => self.get_user_name(user),
-                None => bail!("User not found: {:?}", user_id),
-            },
-            (None, Some(bot_id)) => {
-                match self
-                    .client
-                    .bots(&crate::request::bots::Info { id: &bot_id })
-                    .await?
-                    .bot
-                {
-                    Some(bot) => bot.name,
-                    None => bail!("Bot not found: {:?}", bot_id),
+                .messages;
+
+            if let Some(messages) = messages {
+                if !messages.is_empty() {
+                    return Ok(messages);
                 }
             }
-            (None, None) => bail!("No user or bot found"),
-        };
+        }
 
-        Ok((user_name, body.into_iter().last().unwrap_or("".to_string()).emojify()))
+        bail!("No messages found")
+    }
+
+    /// Convert the messages to the body of the message. If the message contains blocks, then
+    /// convert the blocks to the string. Otherwise, return the text of the message.
+    async fn messages_to_body(&self, messages: &[Message]) -> String {
+        messages
+            .iter()
+            .flat_map(|m| match &m.blocks {
+                Some(blocks) => blocks.iter().map(|b| b.to_string()).collect::<Vec<String>>(),
+                None => vec![m.text.clone().unwrap_or_default()],
+            })
+            .last()
+            .unwrap_or("".to_string())
+            .emojify()
+    }
+
+    /// Determine the user name from the messages. If the message is from a user, then get the user
+    /// name from the user ID. If the message is from a bot, then get the bot name from the bot ID.
+    async fn determine_user_name(&self, messages: &[Message]) -> Result<String> {
+        let user_id = &messages.last().unwrap().user;
+        let bot_id = &messages.last().unwrap().bot_id;
+
+        // If user ID is there, use it or die.
+        if let Some(id) = user_id {
+            match self.client.users(&users::Info { id }).await?.user {
+                Some(user) => return Ok(self.get_user_name(user)),
+                None => bail!("User not found: {id:?}"),
+            }
+        }
+
+        // If bot ID is there, use it or die.
+        if let Some(id) = bot_id {
+            match self.client.bots(&bots::Info { id }).await?.bot {
+                Some(bot) => return Ok(bot.name),
+                None => bail!("Bot not found: {id:?}"),
+            }
+        }
+
+        bail!("No user or bot found");
     }
 
     /// Replace the user mentions (`<@ID>`) to the actual user name.
@@ -252,11 +262,7 @@ impl SlackMessage<Initialized<'_>> {
 
         for cap in RE_USER.captures_iter(body) {
             if let Some(m) = cap.get(1) {
-                if let Ok(response) = self
-                    .client
-                    .users(&crate::request::users::Info { id: m.as_str() })
-                    .await
-                {
+                if let Ok(response) = self.client.users(&users::Info { id: m.as_str() }).await {
                     if let Some(user) = response.user {
                         new_text.push_str(&body[last..m.start().saturating_sub(2)]); // remove the `<@`
                         new_text.push_str("**@");
@@ -278,10 +284,11 @@ impl SlackMessage<Initialized<'_>> {
 
         for cap in RE_USERGROUP.captures_iter(body) {
             if self.usergroups.as_ref().is_none() {
-                self.usergroups = Some(match self.client.usergroups(&List {}).await?.usergroups {
-                    Some(list) => list,
-                    None => bail!("Failed to get usergroups"),
-                });
+                self.usergroups =
+                    Some(match self.client.usergroups(&usergroups::List {}).await?.usergroups {
+                        Some(list) => list,
+                        None => bail!("Failed to get usergroups"),
+                    });
             }
 
             if let Some(m) = cap.get(1) {
@@ -310,7 +317,7 @@ impl SlackMessage<Initialized<'_>> {
             if let Some(m) = cap.get(1) {
                 if let Ok(response) = self
                     .client
-                    .conversations(&crate::request::conversations::Info { channel: m.as_str() })
+                    .conversations(&conversations::Info { channel: m.as_str() })
                     .await
                 {
                     if let Some(channel) = response.channel {
@@ -361,8 +368,7 @@ impl SlackMessage<Initialized<'_>> {
         Ok(new_text)
     }
 
-    /// Naive implementation to get the username. If the user is a bot, return the real name, else
-    /// return the display name if it's not empty, otherwise return the name.
+    /// Naive implementation to get the username.
     fn get_user_name(&self, user: User) -> String {
         if user.is_bot {
             user.real_name
