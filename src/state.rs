@@ -16,33 +16,24 @@ use tera::{Context, Tera};
 ///
 /// The client transitions through these states in the following order:
 ///
-/// `Client<Uninitialized>` -> `new()` -> `Client<Initialized>` -> `retrieve()` ->
-/// `Client<Retrieved>` -> `render()` -> Your text
+/// `Client<Uninitialized>` → `new()` → `Client<Initialized>` → `retrieve()` →
+/// `Client<Retrieved>` → `render()` → Your text
 pub trait State {}
 impl State for Uninitialized {}
 impl State for Initialized {}
 impl State for Retrieved {}
 
-/// The CLI arguments. This is an alias for the `Uninitialized` struct, for clarity.
-pub type CliArgs = Uninitialized;
-
 /// Uninitialized state of the client, or the CLI arguments.
-#[derive(Parser)]
-#[clap(version, author, about)]
 pub struct Uninitialized {
     /// Slack API token.
-    #[arg(long, env = "SLACK_TOKEN")]
     pub token: String,
 
     /// Include the message body as a quote.
-    #[arg(short, long)]
     pub quote: bool,
 
     /// The IANA time zone database identifiers to use for the timestamp.
-    #[arg(short, long, default_value = "Asia/Tokyo")]
     pub timezone: String,
 
-    #[command(flatten)]
     pub templates: Templates,
 }
 

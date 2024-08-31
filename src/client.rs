@@ -1,7 +1,6 @@
 use std::{ops::Deref, path::PathBuf};
 
 use anyhow::Result;
-use clap::Parser;
 use comrak::{markdown_to_html, ComrakOptions, RenderOptionsBuilder};
 use slack_client::{message, SlackMessage};
 use strum::EnumProperty;
@@ -9,7 +8,7 @@ use tera::{Context, Tera};
 use tokio::fs::read_to_string;
 
 use crate::{
-    state::{CliArgs, Initialized, Retrieved, State, Templates, Uninitialized},
+    state::{Initialized, Retrieved, State, Templates, Uninitialized},
     template::{
         ContextKey,
         ContextKey::{
@@ -45,16 +44,15 @@ where
 }
 
 impl Client<Uninitialized> {
-    /// Create a new Copier client with the given CLI arguments.
-    pub async fn new() -> Result<Client<Initialized>> {
-        let Uninitialized { token, quote, timezone, templates } = CliArgs::parse();
-
+    /// Create a new Copier client with the given Slack API token, quote flag, timezone, and
+    /// templates.
+    pub async fn from(state: Uninitialized) -> Result<Client<Initialized>> {
         Ok(Client {
             state: Initialized {
-                token,
-                quote,
-                timezone,
-                tera: Self::setup_tera(&templates).await?,
+                token: state.token,
+                quote: state.quote,
+                timezone: state.timezone.clone(),
+                tera: Self::setup_tera(&state.templates).await?,
             },
         })
     }
