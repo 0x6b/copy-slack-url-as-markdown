@@ -2,10 +2,7 @@ use std::{ops::Deref, path::PathBuf};
 
 use anyhow::Result;
 use comrak::{markdown_to_html, ComrakOptions, RenderOptionsBuilder};
-use slack_client::{
-    message::state::{Initialized as MessageInitialized, Resolved as MessageResolved},
-    SlackMessage,
-};
+use slack_client::{message::state::Resolved as MessageResolved, SlackMessage};
 use strum::EnumProperty;
 use tera::{Context, Tera};
 use tokio::fs::read_to_string;
@@ -105,8 +102,8 @@ impl Client<Initialized> {
     ///
     /// - `url`: The [`url::URL`] of the Slack message.
     pub async fn retrieve(&self, url: &url::Url) -> Result<Client<Retrieved>> {
-        let mut message: SlackMessage<MessageInitialized> = SlackMessage::try_from(url)?;
-        let message: SlackMessage<MessageResolved> = message.resolve(&self.token).await?;
+        let mut message = SlackMessage::try_from(url)?;
+        let message = message.resolve(&self.token).await?;
 
         Ok(Client {
             state: Retrieved {
