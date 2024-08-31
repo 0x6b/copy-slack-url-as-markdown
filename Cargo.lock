@@ -1199,6 +1199,15 @@ dependencies = [
 ]
 
 [[package]]
+name = "mrkdwn2markdown"
+version = "0.2.0"
+source = "git+https://github.com/0x6b/mrkdwn2markdown?tag=v0.2.0#168d0d58539a32a7918df5d1a4b2b62d9aeeed6a"
+dependencies = [
+ "serde",
+ "serde_json",
+]
+
+[[package]]
 name = "native-tls"
 version = "0.2.12"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -2045,6 +2054,7 @@ name = "slack_client"
 version = "0.1.0"
 dependencies = [
  "anyhow",
+ "mrkdwn2markdown",
  "regex",
  "reqwest",
  "serde",
