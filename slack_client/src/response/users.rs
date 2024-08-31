@@ -19,7 +19,7 @@ pub struct User {
     /// The name of the user.
     pub name: String,
     /// The real name of the user.
-    pub real_name: String,
+    pub real_name: Option<String>,
     /// The profile object.
     pub profile: Profile,
     /// Whether the user is a bot.

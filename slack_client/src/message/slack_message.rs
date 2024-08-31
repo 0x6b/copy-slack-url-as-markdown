@@ -6,7 +6,7 @@ use url::Url;
 use crate::{
     message::{
         state::{Initialized, Resolved, State, Uninitialized},
-        QueryParams, RE_CHANNEL, RE_LINK, RE_USER, RE_USERGROUP,
+        QueryParams, RE_CHANNEL, RE_LINK, RE_SPECIAL_MENTION, RE_USER, RE_USERGROUP,
     },
     request::{bots, conversations, usergroups, users},
     response::{conversations::Message, users::User},
@@ -54,7 +54,6 @@ impl<'a> SlackMessage<Uninitialized<'_>> {
         }
 
         let (channel_id, ts, ts64, thread_ts64) = Self::parse(url)?;
-        let client = Client::new(token)?;
         Ok(SlackMessage {
             state: Initialized {
                 url,
@@ -62,7 +61,7 @@ impl<'a> SlackMessage<Uninitialized<'_>> {
                 ts,
                 ts64,
                 thread_ts64,
-                client,
+                client: Client::new(token)?,
                 usergroups: None,
             },
         })
@@ -109,15 +108,33 @@ impl SlackMessage<Initialized<'_>> {
     /// # Arguments
     ///
     /// - `token` - The Slack API token.
+    ///
+    /// # Reference
+    ///
+    /// [Formatting text for app surfaces | Slack](https://api.slack.com/reference/surfaces/formatting)
+    ///
+    /// ## Notes on retrieving formatted messages
+    ///
+    /// If you're [retrieving messages](https://api.slack.com/messaging/retrieving), we've included some extra details in the sections above to help you parse the formatting syntax. This will allow you to properly format it for display on a different service, or to help your app fully understand the intent of a message. Here are the general steps involved in detecting advanced formatting syntax:
+    ///
+    /// 1. Detect all sub-strings matching `<(.*?)>`.
+    /// 2. Within those sub-strings, format content starting with `#C` as a [channel link](https://api.slack.com/reference/surfaces/formatting#linking-channels).
+    /// 3. Format content starting with `@U` or `@W` as a [user mention](https://api.slack.com/reference/surfaces/formatting#mentioning-users).
+    /// 4. Format content starting with `!subteam` as a [user group mention](https://api.slack.com/reference/surfaces/formatting#mentioning-groups).
+    /// 5. Format content starting with `!` according to the rules for [special mentions](https://api.slack.com/reference/surfaces/formatting#special-mentions).
+    /// 6. For any other content within those sub-strings, format as a [URL link](https://api.slack.com/reference/surfaces/formatting#linking-urls).
+    /// 7. Once the format has been determined, check for a pipe (`|`) \- if present, use the text
+    ///    following the pipe as the label for the link or mention.
     pub async fn resolve(&mut self) -> Result<SlackMessage<Resolved>> {
         let channel_name = self.get_channel_name().await?;
         let messages = self.get_messages().await?;
         let user_name = self.determine_user_name(&messages).await?;
-        let body = self.messages_to_body(&messages).await;
-        let body = self.replace_user_ids(&body).await?;
-        let body = self.replace_usergroups_ids(&body).await?;
-        let body = self.replace_channel_ids(&body).await?;
-        let body = self.replace_links(&body)?;
+        let body = self.messages_to_body(&messages);
+        let body = self.replace_channel_ids(&body).await?; // 2
+        let body = self.replace_user_ids(&body).await?; // 3
+        let body = self.replace_usergroups_ids(&body).await?; // 4
+        let body = self.replace_special_mentions(&body)?; // 5
+        let body = self.replace_links(&body)?; // 6 and 7
 
         Ok(SlackMessage {
             state: Resolved {
@@ -216,20 +233,6 @@ impl SlackMessage<Initialized<'_>> {
         bail!("No messages found")
     }
 
-    /// Convert the messages to the body of the message. If the message contains blocks, then
-    /// convert the blocks to the string. Otherwise, return the text of the message.
-    async fn messages_to_body(&self, messages: &[Message]) -> String {
-        messages
-            .iter()
-            .flat_map(|m| match &m.blocks {
-                Some(blocks) => blocks.iter().map(|b| b.to_string()).collect::<Vec<String>>(),
-                None => vec![m.text.clone().unwrap_or_default()],
-            })
-            .last()
-            .unwrap_or("".to_string())
-            .emojify()
-    }
-
     /// Determine the user name from the messages. If the message is from a user, then get the user
     /// name from the user ID. If the message is from a bot, then get the bot name from the bot ID.
     async fn determine_user_name(&self, messages: &[Message]) -> Result<String> {
@@ -253,6 +256,59 @@ impl SlackMessage<Initialized<'_>> {
         }
 
         bail!("No user or bot found");
+    }
+
+    /// Convert the messages to the body of the message. If the message contains blocks, then
+    /// convert the blocks to the string. Otherwise, return the text of the message.
+    fn messages_to_body(&self, messages: &[Message]) -> String {
+        messages
+            .iter()
+            .flat_map(|m| match &m.blocks {
+                Some(blocks) => blocks.iter().map(|b| b.to_string()).collect::<Vec<String>>(),
+                None => vec![m.text.clone().unwrap_or_default()],
+            })
+            .last()
+            .unwrap_or("".to_string())
+            .emojify()
+    }
+
+    /// Replace the channel (`<#CID>`) to the actual channel name.
+    async fn replace_channel_ids(&self, body: &str) -> Result<String> {
+        let mut new_text = String::with_capacity(body.len());
+        let mut last = 0;
+
+        for cap in RE_CHANNEL.captures_iter(body) {
+            if let Some(m) = cap.get(1) {
+                if let Ok(response) = self
+                    .client
+                    .conversations(&conversations::Info { channel: m.as_str() })
+                    .await
+                {
+                    if let Some(channel) = response.channel {
+                        new_text.push_str(&body[last..m.start().saturating_sub(2)]); // remove the `<#`
+                        new_text.push_str("**#");
+                        new_text.push_str(
+                            &channel.name_normalized.unwrap_or_else(|| "Unknown".to_string()),
+                        );
+                        new_text.push_str("**");
+                        last = m.end().saturating_add(match cap.get(2) {
+                            Some(s) => s.as_str().len() + 1,
+                            None => 1,
+                        }); // remove the `(|.*)?>`
+                    }
+                } else {
+                    println!("Failed to get channel: {}", m.as_str());
+                    new_text.push_str(&body[last..m.start().saturating_sub(2)]); // remove the `<#`
+                    new_text.push_str("**#private channel**");
+                    last = m.end().saturating_add(match cap.get(2) {
+                        Some(s) => s.as_str().len() + 1,
+                        None => 1,
+                    });
+                }
+            }
+        }
+        new_text.push_str(&body[last..]);
+        Ok(new_text)
     }
 
     /// Replace the user mentions (`<@ID>`) to the actual user name.
@@ -308,39 +364,18 @@ impl SlackMessage<Initialized<'_>> {
         Ok(new_text)
     }
 
-    /// Replace the channel (`<#CID>`) to the actual channel name.
-    async fn replace_channel_ids(&self, body: &str) -> Result<String> {
+    /// Replace special mentions.
+    fn replace_special_mentions(&self, body: &str) -> Result<String> {
         let mut new_text = String::with_capacity(body.len());
         let mut last = 0;
 
-        for cap in RE_CHANNEL.captures_iter(body) {
+        for cap in RE_SPECIAL_MENTION.captures_iter(body) {
             if let Some(m) = cap.get(1) {
-                if let Ok(response) = self
-                    .client
-                    .conversations(&conversations::Info { channel: m.as_str() })
-                    .await
-                {
-                    if let Some(channel) = response.channel {
-                        new_text.push_str(&body[last..m.start().saturating_sub(2)]); // remove the `<#`
-                        new_text.push_str("**#");
-                        new_text.push_str(
-                            &channel.name_normalized.unwrap_or_else(|| "Unknown".to_string()),
-                        );
-                        new_text.push_str("**");
-                        last = m.end().saturating_add(match cap.get(2) {
-                            Some(s) => s.as_str().len() + 1,
-                            None => 1,
-                        }); // remove the `(|.*)?>`
-                    }
-                } else {
-                    println!("Failed to get channel: {}", m.as_str());
-                    new_text.push_str(&body[last..m.start().saturating_sub(2)]); // remove the `<#`
-                    new_text.push_str("**#private channel**");
-                    last = m.end().saturating_add(match cap.get(2) {
-                        Some(s) => s.as_str().len() + 1,
-                        None => 1,
-                    });
-                }
+                new_text.push_str(&body[last..m.start().saturating_sub(2)]); // remove the `<@`
+                new_text.push_str("**@");
+                new_text.push_str(m.as_str());
+                new_text.push_str("**");
+                last = m.end().saturating_add(1); // remove the `>`
             }
         }
         new_text.push_str(&body[last..]);
@@ -348,7 +383,8 @@ impl SlackMessage<Initialized<'_>> {
     }
 
     /// Replace the mrkdwn format of the links (`<url|title>`) to the markdown format
-    /// (`[title](url)`).
+    /// (`[title](url)`). Actually, this is not necessary because the
+    /// `response.conversations#to_string()` will convert the links to the markdown format.
     fn replace_links(&self, body: &str) -> Result<String> {
         let mut new_text = String::with_capacity(body.len());
         let mut last = 0;
@@ -371,7 +407,7 @@ impl SlackMessage<Initialized<'_>> {
     /// Naive implementation to get the username.
     fn get_user_name(&self, user: User) -> String {
         if user.is_bot {
-            user.real_name
+            user.real_name.unwrap_or(user.name)
         } else if user.profile.display_name.is_empty() {
             user.name
         } else {
