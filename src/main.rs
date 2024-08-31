@@ -11,7 +11,7 @@ mod template;
 #[tokio::main]
 async fn main() -> Result<()> {
     let args = Args::parse();
-    let client = match Client::from(args.into()).await {
+    let client = match Client::from((&args).into()).await {
         Ok(c) => c,
         Err(why) => bail!("failed to initialize client: {why}"),
     };
@@ -21,9 +21,12 @@ async fn main() -> Result<()> {
         Err(why) => bail!("failed to access system clipboard: {why}"),
     };
 
-    let text = match clipboard.get_text() {
-        Ok(t) => t,
-        Err(why) => bail!("failed to get text from clipboard: {why}"),
+    let text = match args.url {
+        Some(url) => url,
+        None => match clipboard.get_text() {
+            Ok(t) => t,
+            Err(why) => bail!("failed to get text from clipboard: {why}"),
+        },
     };
 
     let url = match url::Url::parse(text.trim()) {
