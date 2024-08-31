@@ -1,11 +1,11 @@
 use std::ops::{Deref, DerefMut};
 
-use anyhow::{anyhow, bail, Error, Result};
+use anyhow::{anyhow, bail, Result};
 use url::Url;
 
 use crate::{
     message::{
-        state::{Initialized, Resolved, State},
+        state::{Initialized, Resolved, State, Uninitialized},
         QueryParams, RE_CHANNEL, RE_LINK, RE_USER, RE_USERGROUP,
     },
     request::{
@@ -47,11 +47,16 @@ where
     }
 }
 
-impl<'a> TryFrom<&'a Url> for SlackMessage<Initialized<'a>> {
-    type Error = Error;
-
-    fn try_from(url: &'a Url) -> Result<SlackMessage<Initialized<'a>>> {
+impl<'a> SlackMessage<Uninitialized<'_>> {
+    /// Create a new Slack message with the given URL and token.
+    ///
+    /// # Arguments
+    ///
+    /// - `url` - The URL of the message.
+    /// - `token` - The Slack API token.
+    pub fn try_new(url: &'a Url, token: &'a str) -> Result<SlackMessage<Initialized<'a>>> {
         let (channel_id, ts, ts64, thread_ts64) = Self::parse(url)?;
+        let client = Client::new(token)?;
         Ok(SlackMessage {
             state: Initialized {
                 url,
@@ -59,9 +64,44 @@ impl<'a> TryFrom<&'a Url> for SlackMessage<Initialized<'a>> {
                 ts,
                 ts64,
                 thread_ts64,
+                client,
                 usergroups: None,
             },
         })
+    }
+
+    /// Parse the given URL and return the channel ID, timestamp, and thread timestamp.
+    ///
+    /// # Arguments
+    ///
+    /// - `url` - The URL to parse.
+    ///
+    /// # Returns
+    ///
+    /// A tuple containing the channel ID (from path segments), timestamp as &str (from another path
+    /// segment), timestamp in f64 (parsed the timestamp as f64), and thread timestamp (from query
+    /// parameters).
+    fn parse(url: &Url) -> Result<(&str, &str, f64, Option<f64>)> {
+        let channel_id = url
+            .path_segments()
+            .ok_or(anyhow!("Failed to get path segments"))?
+            .nth(1)
+            .ok_or(anyhow!("Failed to get the last path segment"))?;
+
+        let ts = url
+            .path_segments()
+            .ok_or(anyhow!("Failed to get path segments"))?
+            .last()
+            .ok_or(anyhow!("Failed to get the last path segment"))?;
+
+        let num = ts.trim_start_matches(|c: char| !c.is_numeric());
+        let (int_part, decimal_part) = num.split_at(num.len() - 6);
+        let ts64 = format!("{int_part}.{decimal_part}").parse::<f64>()?;
+
+        let params: QueryParams =
+            serde_qs::Config::new(5, false).deserialize_str(url.query().unwrap_or(""))?;
+
+        Ok((channel_id, num, ts64, params.thread_ts))
     }
 }
 
@@ -71,10 +111,9 @@ impl SlackMessage<Initialized<'_>> {
     /// # Arguments
     ///
     /// - `token` - The Slack API token.
-    pub async fn resolve(&mut self, token: &str) -> Result<SlackMessage<Resolved>> {
-        let client = Client::new(token)?;
-
-        let channel_name = match client
+    pub async fn resolve(&mut self) -> Result<SlackMessage<Resolved>> {
+        let channel_name = match self
+            .client
             .conversations(&crate::request::conversations::Info { channel: self.channel_id })
             .await?
             .channel
@@ -83,7 +122,7 @@ impl SlackMessage<Initialized<'_>> {
                 (Some(true), _) => {
                     format!(
                         "DM with {}",
-                        client
+                        self.client
                             .users(&crate::request::users::Info { id: &channel.user.unwrap() })
                             .await?
                             .user
@@ -103,10 +142,10 @@ impl SlackMessage<Initialized<'_>> {
             None => bail!("Channel not found: {}", self.channel_id),
         };
 
-        let (user_name, body) = self.get_user_name_and_body(&client).await?;
-        let body = self.replace_user_ids(&client, &body).await?;
-        let body = self.replace_channel_ids(&client, &body).await?;
-        let body = self.replace_usergroups_ids(&client, &body).await?;
+        let (user_name, body) = self.get_user_name_and_body().await?;
+        let body = self.replace_user_ids(&body).await?;
+        let body = self.replace_channel_ids(&body).await?;
+        let body = self.replace_usergroups_ids(&body).await?;
         let body = self.replace_links(&body)?;
 
         Ok(SlackMessage {
@@ -121,8 +160,9 @@ impl SlackMessage<Initialized<'_>> {
     }
 
     /// Get the body of the message and the user name who posted the message.
-    async fn get_user_name_and_body(&self, client: &Client) -> Result<(String, String)> {
-        let history = client
+    async fn get_user_name_and_body(&self) -> Result<(String, String)> {
+        let history = self
+            .client
             .conversations(&History {
                 channel: self.channel_id,
                 latest: self.ts64,
@@ -152,7 +192,8 @@ impl SlackMessage<Initialized<'_>> {
                 // If the message didn't send to the main channel, the response of the
                 // conversation.history will be blank. I'm not sure why. Try to
                 // fetch using conversation.replies
-                let messages = client
+                let messages = self
+                    .client
                     .conversations(&Replies {
                         channel: self.channel_id,
                         ts: self.thread_ts64.unwrap_or(self.ts64),
@@ -174,7 +215,8 @@ impl SlackMessage<Initialized<'_>> {
         };
 
         let user_name = match (user_id, bot_id) {
-            (Some(user_id), _) => match client
+            (Some(user_id), _) => match self
+                .client
                 .users(&crate::request::users::Info { id: &user_id })
                 .await?
                 .user
@@ -183,7 +225,12 @@ impl SlackMessage<Initialized<'_>> {
                 None => bail!("User not found: {:?}", user_id),
             },
             (None, Some(bot_id)) => {
-                match client.bots(&crate::request::bots::Info { id: &bot_id }).await?.bot {
+                match self
+                    .client
+                    .bots(&crate::request::bots::Info { id: &bot_id })
+                    .await?
+                    .bot
+                {
                     Some(bot) => bot.name,
                     None => bail!("Bot not found: {:?}", bot_id),
                 }
@@ -195,14 +242,16 @@ impl SlackMessage<Initialized<'_>> {
     }
 
     /// Replace the user mentions (`<@ID>`) to the actual user name.
-    async fn replace_user_ids(&self, client: &Client, body: &str) -> Result<String> {
+    async fn replace_user_ids(&self, body: &str) -> Result<String> {
         let mut new_text = String::with_capacity(body.len());
         let mut last = 0;
 
         for cap in RE_USER.captures_iter(body) {
             if let Some(m) = cap.get(1) {
-                if let Ok(response) =
-                    client.users(&crate::request::users::Info { id: m.as_str() }).await
+                if let Ok(response) = self
+                    .client
+                    .users(&crate::request::users::Info { id: m.as_str() })
+                    .await
                 {
                     if let Some(user) = response.user {
                         new_text.push_str(&body[last..m.start().saturating_sub(2)]); // remove the `<@`
@@ -219,13 +268,13 @@ impl SlackMessage<Initialized<'_>> {
     }
 
     /// Replace the usergroup mentions (`<!subteam^ID>`) to the actual usergroup handle.
-    async fn replace_usergroups_ids(&mut self, client: &Client, body: &str) -> Result<String> {
+    async fn replace_usergroups_ids(&mut self, body: &str) -> Result<String> {
         let mut new_text = String::with_capacity(body.len());
         let mut last = 0;
 
         for cap in RE_USERGROUP.captures_iter(body) {
             if self.usergroups.as_ref().is_none() {
-                self.usergroups = Some(match client.usergroups(&List {}).await?.usergroups {
+                self.usergroups = Some(match self.client.usergroups(&List {}).await?.usergroups {
                     Some(list) => list,
                     None => bail!("Failed to get usergroups"),
                 });
@@ -249,13 +298,14 @@ impl SlackMessage<Initialized<'_>> {
     }
 
     /// Replace the channel (`<#CID>`) to the actual channel name.
-    async fn replace_channel_ids(&self, client: &Client, body: &str) -> Result<String> {
+    async fn replace_channel_ids(&self, body: &str) -> Result<String> {
         let mut new_text = String::with_capacity(body.len());
         let mut last = 0;
 
         for cap in RE_CHANNEL.captures_iter(body) {
             if let Some(m) = cap.get(1) {
-                if let Ok(response) = client
+                if let Ok(response) = self
+                    .client
                     .conversations(&crate::request::conversations::Info { channel: m.as_str() })
                     .await
                 {
@@ -317,39 +367,5 @@ impl SlackMessage<Initialized<'_>> {
         } else {
             user.profile.display_name
         }
-    }
-
-    /// Parse the given URL and return the channel ID, timestamp, and thread timestamp.
-    ///
-    /// # Arguments
-    ///
-    /// - `url` - The URL to parse.
-    ///
-    /// # Returns
-    ///
-    /// A tuple containing the channel ID (from path segments), timestamp as &str (from another path
-    /// segment), timestamp in f64 (parsed the timestamp as f64), and thread timestamp (from query
-    /// parameters).
-    fn parse(url: &Url) -> Result<(&str, &str, f64, Option<f64>)> {
-        let channel_id = url
-            .path_segments()
-            .ok_or(anyhow!("Failed to get path segments"))?
-            .nth(1)
-            .ok_or(anyhow!("Failed to get the last path segment"))?;
-
-        let ts = url
-            .path_segments()
-            .ok_or(anyhow!("Failed to get path segments"))?
-            .last()
-            .ok_or(anyhow!("Failed to get the last path segment"))?;
-
-        let num = ts.trim_start_matches(|c: char| !c.is_numeric());
-        let (int_part, decimal_part) = num.split_at(num.len() - 6);
-        let ts64 = format!("{int_part}.{decimal_part}").parse::<f64>()?;
-
-        let params: QueryParams =
-            serde_qs::Config::new(5, false).deserialize_str(url.query().unwrap_or(""))?;
-
-        Ok((channel_id, num, ts64, params.thread_ts))
     }
 }

@@ -11,6 +11,7 @@ use crate::{
     response::Response,
 };
 
+#[derive(Debug)]
 pub struct Client {
     endpoint: String,
     client: reqwest::Client,
