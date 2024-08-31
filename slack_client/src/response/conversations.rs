@@ -66,7 +66,7 @@ impl Display for Block {
             BlockType::RichText | BlockType::Context => match &self.elements {
                 Some(elements) => {
                     for element in elements {
-                        write!(f, "{}", element)?;
+                        write!(f, "{element}")?
                     }
                 }
                 None => {}
@@ -130,7 +130,7 @@ impl Display for RichTextElement {
             RichTextElement::RichTextQuote { elements } => {
                 let mut result = String::new();
                 for element in elements {
-                    result.push_str(&format!("> {}", element));
+                    result.push_str(&format!("> {element}"));
                 }
                 result
             }
@@ -180,10 +180,10 @@ impl Display for RichTextElement {
                         );
                         result.push_str(
                             &Some(text.to_string())
-                                .map(|t| if code { format!("`{}`", t) } else { t })
-                                .map(|t| if bold { format!("**{}**", t) } else { t })
-                                .map(|t| if italic { format!("_{}_", t) } else { t })
-                                .map(|t| if strike { format!("~~{}~~", t) } else { t })
+                                .map(|t| if code { format!("`{t}`") } else { t })
+                                .map(|t| if bold { format!("**{t}**") } else { t })
+                                .map(|t| if italic { format!("_{t}_") } else { t })
+                                .map(|t| if strike { format!("~~{t}~~") } else { t })
                                 .unwrap(),
                         );
                     }
@@ -237,7 +237,7 @@ impl Display for RichTextElement {
                 result
             }
         };
-        write!(f, "{}", str)
+        write!(f, "{str}")
     }
 }
 
