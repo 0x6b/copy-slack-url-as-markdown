@@ -2,11 +2,11 @@ use std::ops::{Deref, DerefMut};
 
 use anyhow::{anyhow, bail, Result};
 use serde::Deserialize;
+use slack_emojify::Emojify;
 use url::Url;
 
 use crate::{
     message::{
-        emojify::Emojify,
         state::{Initialized, Resolved, State, Uninitialized},
         RE_CHANNEL, RE_LINK, RE_SPECIAL_MENTION, RE_USER, RE_USERGROUP,
     },

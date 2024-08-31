@@ -1,4 +1,3 @@
-mod emojify;
 mod slack_message;
 pub mod state;
 

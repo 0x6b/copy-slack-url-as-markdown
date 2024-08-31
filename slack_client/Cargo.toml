@@ -28,3 +28,6 @@ url = "2.5.2"
 
 # To Markdown
 mrkdwn2markdown = { git = "https://github.com/0x6b/mrkdwn2markdown", tag = "v0.2.0" }
+
+# Convert Slack emoji to Unicode emoji
+slack_emojify = { git = "https://github.com/0x6b/slack_emojify", tag = "v0.1.0" }
