@@ -63,7 +63,7 @@ pub struct Block {
 impl Display for Block {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         match &self.block_type {
-            BlockType::RichText => match &self.elements {
+            BlockType::RichText | BlockType::Context => match &self.elements {
                 Some(elements) => {
                     for element in elements {
                         write!(f, "{}", element)?;
@@ -74,7 +74,6 @@ impl Display for Block {
             BlockType::Header => {}
             BlockType::Divider => {}
             BlockType::Actions => {}
-            BlockType::Context => {}
             BlockType::File => {}
             BlockType::Image => {}
             BlockType::Input => {}
@@ -89,16 +88,16 @@ impl Display for Block {
 #[serde(rename_all = "snake_case")]
 pub enum BlockType {
     RichText,
+    Context,
 
-    Header,  // not supported
-    Divider, // not supported
     Actions, // not supported
-    Context, // not supported
+    Divider, // not supported
     File,    // not supported
+    Header,  // not supported
     Image,   // not supported
     Input,   // not supported
     Section, // not supported
-    Video,   // not supported}
+    Video,   // not supported
 }
 
 #[derive(Debug, Deserialize, Clone)]
@@ -170,31 +169,6 @@ impl Display for RichTextElement {
                 result
             }
             RichTextElement::Text { text, style } => {
-                let mut result = String::new();
-                match style {
-                    Some(Style { code, bold, italic, strike }) => {
-                        let (code, bold, italic, strike) = (
-                            code.unwrap_or_default(),
-                            bold.unwrap_or_default(),
-                            italic.unwrap_or_default(),
-                            strike.unwrap_or_default(),
-                        );
-                        result.push_str(
-                            &Some(text.to_string())
-                                .map(|t| if code { format!("`{}`", t) } else { t })
-                                .map(|t| if bold { format!("**{}**", t) } else { t })
-                                .map(|t| if italic { format!("_{}_", t) } else { t })
-                                .map(|t| if strike { format!("~~{}~~", t) } else { t })
-                                .unwrap(),
-                        );
-                    }
-                    None => {
-                        result.push_str(text);
-                    }
-                }
-                result
-            }
-            RichTextElement::Mrkdwn { text, style } => {
                 let mut result = String::new();
                 match style {
                     Some(Style { code, bold, italic, strike }) => {

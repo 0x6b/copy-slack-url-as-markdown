@@ -181,9 +181,7 @@ impl SlackMessage<Initialized<'_>> {
             let body = messages
                 .into_iter()
                 .flat_map(|m| match m.blocks {
-                    Some(blocks) => {
-                        blocks.into_iter().map(|b| b.to_string()).collect::<Vec<String>>()
-                    }
+                    Some(blocks) => blocks.iter().map(|b| b.to_string()).collect::<Vec<String>>(),
                     None => vec![m.text.unwrap_or_default()],
                 })
                 .collect::<Vec<String>>();
@@ -322,11 +320,11 @@ impl SlackMessage<Initialized<'_>> {
         for cap in RE_LINK.captures_iter(body) {
             if let (Some(url), Some(title)) = (cap.get(1), cap.get(2)) {
                 new_text.push_str(&body[last..url.start().saturating_sub(1)]); // remove the `<`
-                new_text.push('"');
+                new_text.push('[');
                 new_text.push_str(title.as_str());
-                new_text.push_str(r#"" <"#);
+                new_text.push_str(r#"]("#);
                 new_text.push_str(url.as_str());
-                new_text.push('>');
+                new_text.push(')');
                 last = title.end().saturating_add(1); // remove the `>`
             }
         }
