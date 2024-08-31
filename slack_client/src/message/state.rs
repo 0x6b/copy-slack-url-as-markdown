@@ -1,6 +1,6 @@
 use url::Url;
 
-use crate::response::usergroups::Usergroup;
+use crate::{response::usergroups::Usergroup, Client};
 
 /// A marker trait for the state of a Slack message.
 ///
@@ -9,11 +9,21 @@ use crate::response::usergroups::Usergroup;
 ///
 /// Possible states are:
 ///
-/// - `Initialized`: The message has been initialized with the URL, channel ID, and timestamp.
-/// - `Resolved`: The message has been resolved with the channel name, user name, and message body.
+/// - `Uninitialized`: Just the URL. No content.
+/// - `Initialized`: The message has been initialized with the URL, channel ID, and timestamp. No
+///   content, and the API client is ready.
+/// - `Resolved`: The message has been retrieved and resolved with the channel name, user name, and
+///   message body.
 pub trait State {}
+impl<'a> State for Uninitialized<'a> {}
 impl<'a> State for Initialized<'a> {}
 impl<'a> State for Resolved<'a> {}
+
+#[derive(Debug)]
+pub struct Uninitialized<'a> {
+    /// The plain URL.
+    pub url: &'a Url,
+}
 
 #[derive(Debug)]
 pub struct Initialized<'a> {
@@ -27,6 +37,8 @@ pub struct Initialized<'a> {
     pub ts64: f64,
     /// The thread timestamp as f64.
     pub thread_ts64: Option<f64>,
+    /// The Slack API client.
+    pub client: Client,
     /// Cache the usergroups to avoid fetching it multiple times, as there is no API to fetch a
     /// single usergroup.
     pub(crate) usergroups: Option<Vec<Usergroup>>,

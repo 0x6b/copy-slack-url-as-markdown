@@ -102,8 +102,8 @@ impl Client<Initialized> {
     ///
     /// - `url`: The [`url::URL`] of the Slack message.
     pub async fn retrieve(&self, url: &url::Url) -> Result<Client<Retrieved>> {
-        let mut message = SlackMessage::try_from(url)?;
-        let message = message.resolve(&self.token).await?;
+        let mut message = SlackMessage::try_new(url, &self.token)?;
+        let message = message.resolve().await?;
 
         Ok(Client {
             state: Retrieved {
