@@ -3,7 +3,7 @@ use std::{ops::Deref, path::PathBuf};
 use anyhow::Result;
 use comrak::{markdown_to_html, ComrakOptions, RenderOptionsBuilder};
 use slack_client::{message::state::Resolved as MessageResolved, SlackMessage};
-use state::{Initialized, Retrieved, State, Templates, Uninitialized};
+use state::{Initialized, Retrieved, State, Uninitialized};
 use strum::EnumProperty;
 use tera::{Context, Tera};
 use tokio::fs::read_to_string;
@@ -16,6 +16,7 @@ use crate::template::{
         UserName, Weekday, WeekdayAbbrev, Year, Year2Digit,
     },
     TemplateType::{RichText, RichTextQuote, Text, TextQuote},
+    Templates,
 };
 
 pub mod state;
