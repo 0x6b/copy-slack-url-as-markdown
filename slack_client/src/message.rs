@@ -38,13 +38,18 @@ struct QueryParams {
 pub trait State {}
 #[derive(Debug)]
 pub struct Initialized<'a> {
+    /// The plain URL.
     pub url: &'a Url,
+    /// The channel ID.
     pub channel_id: &'a str,
+    /// The timestamp as &str.
     pub ts: &'a str,
+    /// The timestamp as f64.
     pub ts64: f64,
+    /// The thread timestamp as f64.
     pub thread_ts64: Option<f64>,
-    // Cache the usergroups to avoid fetching it multiple times, as there is no API to fetch a
-    // single usergroup
+    /// Cache the usergroups to avoid fetching it multiple times, as there is no API to fetch a
+    /// single usergroup.
     usergroups: Option<Vec<Usergroup>>,
 }
 
