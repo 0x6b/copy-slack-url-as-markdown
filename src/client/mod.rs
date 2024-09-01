@@ -8,21 +8,12 @@ use strum::EnumProperty;
 use tera::{Context, Tera};
 use tokio::fs::read_to_string;
 
-use crate::template::{
-    ContextKey,
-    ContextKey::{
-        AmPm, AmPmLower, ChannelName, Clock, Day, DaySpace, Hour12, Hour24, IsoDate, Minute, Month,
-        Month2Digit, MonthAbbrev, Offset, OffsetColon, Second, Timestamp, TzAbbrev, TzIana, Url,
-        UserName, Weekday, WeekdayAbbrev, Year, Year2Digit,
-    },
-    TemplateType::{RichText, RichTextQuote, Text, TextQuote},
-    Templates,
-};
+use crate::template::{ContextKey::*, TemplateType::*, Templates};
 
 pub mod state;
 
-const TEMPLATE_TEXT: &str = include_str!("../../templates/text");
-const TEMPLATE_TEXT_QUOTE: &str = include_str!("../../templates/text_quote");
+const TEMPLATE_PLAIN_TEXT: &str = include_str!("../../templates/plain_text");
+const TEMPLATE_PLAIN_TEXT_QUOTE: &str = include_str!("../../templates/plain_text_quote");
 const TEMPLATE_RICH_TEXT: &str = include_str!("../../templates/rich_text");
 const TEMPLATE_RICH_TEXT_QUOTE: &str = include_str!("../../templates/rich_text_quote");
 
@@ -65,10 +56,10 @@ impl Client<Uninitialized> {
         let mut tera = Tera::default();
 
         for (name, pathlike, default) in [
-            (Text,          &arg.text,            TEMPLATE_TEXT),
-            (TextQuote,     &arg.text_quote,      TEMPLATE_TEXT_QUOTE),
-            (RichText,      &arg.rich_text,       TEMPLATE_RICH_TEXT),
-            (RichTextQuote, &arg.rich_text_quote, TEMPLATE_RICH_TEXT_QUOTE),
+            (PlainText,      &arg.plain_text,       TEMPLATE_PLAIN_TEXT),
+            (PlainTextQuote, &arg.plain_text_quote, TEMPLATE_PLAIN_TEXT_QUOTE),
+            (RichText,       &arg.rich_text,        TEMPLATE_RICH_TEXT),
+            (RichTextQuote,  &arg.rich_text_quote,  TEMPLATE_RICH_TEXT_QUOTE),
         ] {
             tera.add_raw_template(name.as_ref(), Self::get_template(pathlike, default).await)?;
         }
@@ -130,7 +121,7 @@ impl Client<Initialized> {
         context.insert(Url.as_ref(), &message.url.as_str());
 
         if self.quote {
-            context.insert(ContextKey::Text.as_ref(), &message.body.lines().collect::<Vec<_>>());
+            context.insert(Text.as_ref(), &message.body.lines().collect::<Vec<_>>());
 
             let mut comrak_options = ComrakOptions {
                 render: RenderOptionsBuilder::default().unsafe_(true).escape(false).build()?,
@@ -141,10 +132,7 @@ impl Client<Initialized> {
             comrak_options.extension.table = true;
             comrak_options.extension.tasklist = true;
             comrak_options.extension.tagfilter = true;
-            context.insert(
-                ContextKey::Html.as_ref(),
-                &markdown_to_html(&message.body, &comrak_options),
-            );
+            context.insert(Html.as_ref(), &markdown_to_html(&message.body, &comrak_options));
         }
 
         [
@@ -193,12 +181,12 @@ impl Client<Retrieved> {
         let (rich_text, text) = if self.quote {
             (
                 self.tera.render(RichTextQuote.as_ref(), &self.context)?,
-                self.tera.render(TextQuote.as_ref(), &self.context)?,
+                self.tera.render(PlainTextQuote.as_ref(), &self.context)?,
             )
         } else {
             (
                 self.tera.render(RichText.as_ref(), &self.context)?,
-                self.tera.render(Text.as_ref(), &self.context)?,
+                self.tera.render(PlainText.as_ref(), &self.context)?,
             )
         };
 

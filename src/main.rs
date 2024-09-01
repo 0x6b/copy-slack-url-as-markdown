@@ -1,5 +1,7 @@
 use anyhow::{bail, Result};
+use arboard::Clipboard;
 use clap::Parser;
+use url::Url;
 
 use crate::{args::Args, client::Client};
 
@@ -15,7 +17,7 @@ async fn main() -> Result<()> {
         Err(why) => bail!("failed to initialize client: {why}"),
     };
 
-    let mut clipboard = match arboard::Clipboard::new() {
+    let mut clipboard = match Clipboard::new() {
         Ok(c) => c,
         Err(why) => bail!("failed to access system clipboard: {why}"),
     };
@@ -28,7 +30,7 @@ async fn main() -> Result<()> {
         },
     };
 
-    let url = match url::Url::parse(text.trim()) {
+    let url = match Url::parse(text.trim()) {
         Ok(u) => u,
         Err(why) => {
             bail!("The provided text '{}...' is not a valid URL: {why}", text.split_at(40).0)

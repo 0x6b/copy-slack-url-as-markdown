@@ -10,13 +10,13 @@ pub use template_type::TemplateType;
 pub struct Templates {
     /// Path to the template file or a string for plain text (without quote). Leave empty to use
     /// the default.
-    #[arg(long, env = "TEMPLATE_TEXT")]
-    pub text: Option<String>,
+    #[arg(long, env = "TEMPLATE_PLAIN_TEXT")]
+    pub plain_text: Option<String>,
 
     /// Path to the template file or a string for plain text (with quote). Leave empty to use the
     /// default.
-    #[arg(long, env = "TEMPLATE_TEXT_QUOTE")]
-    pub text_quote: Option<String>,
+    #[arg(long, env = "TEMPLATE_PLAIN_TEXT_QUOTE")]
+    pub plain_text_quote: Option<String>,
 
     /// Path to the template file or a string for rich text (without quote). Leave empty to use the
     /// default.
