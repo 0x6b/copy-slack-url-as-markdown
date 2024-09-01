@@ -8,16 +8,7 @@ use strum::EnumProperty;
 use tera::{Context, Tera};
 use tokio::fs::read_to_string;
 
-use crate::template::{
-    ContextKey,
-    ContextKey::{
-        AmPm, AmPmLower, ChannelName, Clock, Day, DaySpace, Hour12, Hour24, IsoDate, Minute, Month,
-        Month2Digit, MonthAbbrev, Offset, OffsetColon, Second, Timestamp, TzAbbrev, TzIana, Url,
-        UserName, Weekday, WeekdayAbbrev, Year, Year2Digit,
-    },
-    TemplateType::{PlainText, PlainTextQuote, RichText, RichTextQuote},
-    Templates,
-};
+use crate::template::{ContextKey::*, TemplateType::*, Templates};
 
 pub mod state;
 
@@ -130,7 +121,7 @@ impl Client<Initialized> {
         context.insert(Url.as_ref(), &message.url.as_str());
 
         if self.quote {
-            context.insert(ContextKey::Text.as_ref(), &message.body.lines().collect::<Vec<_>>());
+            context.insert(Text.as_ref(), &message.body.lines().collect::<Vec<_>>());
 
             let mut comrak_options = ComrakOptions {
                 render: RenderOptionsBuilder::default().unsafe_(true).escape(false).build()?,
@@ -141,10 +132,7 @@ impl Client<Initialized> {
             comrak_options.extension.table = true;
             comrak_options.extension.tasklist = true;
             comrak_options.extension.tagfilter = true;
-            context.insert(
-                ContextKey::Html.as_ref(),
-                &markdown_to_html(&message.body, &comrak_options),
-            );
+            context.insert(Html.as_ref(), &markdown_to_html(&message.body, &comrak_options));
         }
 
         [
