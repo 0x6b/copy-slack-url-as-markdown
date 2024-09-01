@@ -126,15 +126,7 @@ impl Client<Initialized> {
         context.insert(ChannelName.as_ref(), &message.channel_name);
         context.insert(UserName.as_ref(), &message.user_name);
         context.insert(Url.as_ref(), &message.url.as_str());
-        context.insert(
-            ContextKey::Text.as_ref(),
-            &message
-                .body
-                .trim()
-                .replace("```", "\n```\n")
-                .lines()
-                .collect::<Vec<_>>(),
-        );
+        context.insert(ContextKey::Text.as_ref(), &message.body.lines().collect::<Vec<_>>());
 
         let mut comrak_options = ComrakOptions {
             render: RenderOptionsBuilder::default().unsafe_(true).escape(false).build()?,
