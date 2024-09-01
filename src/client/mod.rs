@@ -15,14 +15,14 @@ use crate::template::{
         Month2Digit, MonthAbbrev, Offset, OffsetColon, Second, Timestamp, TzAbbrev, TzIana, Url,
         UserName, Weekday, WeekdayAbbrev, Year, Year2Digit,
     },
-    TemplateType::{RichText, RichTextQuote, Text, TextQuote},
+    TemplateType::{PlainText, PlainTextQuote, RichText, RichTextQuote},
     Templates,
 };
 
 pub mod state;
 
-const TEMPLATE_TEXT: &str = include_str!("../../templates/text");
-const TEMPLATE_TEXT_QUOTE: &str = include_str!("../../templates/text_quote");
+const TEMPLATE_PLAIN_TEXT: &str = include_str!("../../templates/plain_text");
+const TEMPLATE_PLAIN_TEXT_QUOTE: &str = include_str!("../../templates/plain_text_quote");
 const TEMPLATE_RICH_TEXT: &str = include_str!("../../templates/rich_text");
 const TEMPLATE_RICH_TEXT_QUOTE: &str = include_str!("../../templates/rich_text_quote");
 
@@ -65,10 +65,10 @@ impl Client<Uninitialized> {
         let mut tera = Tera::default();
 
         for (name, pathlike, default) in [
-            (Text,          &arg.text,            TEMPLATE_TEXT),
-            (TextQuote,     &arg.text_quote,      TEMPLATE_TEXT_QUOTE),
-            (RichText,      &arg.rich_text,       TEMPLATE_RICH_TEXT),
-            (RichTextQuote, &arg.rich_text_quote, TEMPLATE_RICH_TEXT_QUOTE),
+            (PlainText,      &arg.plain_text,       TEMPLATE_PLAIN_TEXT),
+            (PlainTextQuote, &arg.plain_text_quote, TEMPLATE_PLAIN_TEXT_QUOTE),
+            (RichText,       &arg.rich_text,        TEMPLATE_RICH_TEXT),
+            (RichTextQuote,  &arg.rich_text_quote,  TEMPLATE_RICH_TEXT_QUOTE),
         ] {
             tera.add_raw_template(name.as_ref(), Self::get_template(pathlike, default).await)?;
         }
@@ -193,12 +193,12 @@ impl Client<Retrieved> {
         let (rich_text, text) = if self.quote {
             (
                 self.tera.render(RichTextQuote.as_ref(), &self.context)?,
-                self.tera.render(TextQuote.as_ref(), &self.context)?,
+                self.tera.render(PlainTextQuote.as_ref(), &self.context)?,
             )
         } else {
             (
                 self.tera.render(RichText.as_ref(), &self.context)?,
-                self.tera.render(Text.as_ref(), &self.context)?,
+                self.tera.render(PlainText.as_ref(), &self.context)?,
             )
         };
 
