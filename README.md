@@ -63,7 +63,10 @@ You can customize the output format by providing a path to the template file or 
 | `--rich-text`       | `TEMPLATE_RICH_TEXT`       | rich text, without quote  |
 | `--rich-text-quote` | `TEMPLATE_RICH_TEXT_QUOTE` | rich text, with quote     |
 
-The pre-defined variables, which you can use in the template i.e., `{{ variable }}`, are below:
+The pre-defined variables, which you can use in the template i.e., `{{ variable }}`, are below.
+
+> [!NOTE]
+> Both the `text` and `html` variables are available only when `--quote` is enabled.
 
 | Variable         | [`jiff:fmt::strftime`](https://docs.rs/jiff/latest/jiff/fmt/strtime/) Specifier | Example                              | Description                                                                      |
 |------------------|---------------------------------------------------------------------------------|--------------------------------------|----------------------------------------------------------------------------------|
