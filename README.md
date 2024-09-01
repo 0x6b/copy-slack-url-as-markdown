@@ -24,7 +24,10 @@ Following permission scopes would also be required to get the message to copy, d
 $ s2m --help
 Copy Slack URL as Markdown
 
-Usage: s2m [OPTIONS] --token <TOKEN>
+Usage: s2m [OPTIONS] --token <TOKEN> [URL]
+
+Arguments:
+  [URL]  Slack message URL to process. Leave empty to use the clipboard
 
 Options:
       --token <TOKEN>
@@ -32,20 +35,19 @@ Options:
   -q, --quote
           Include the message body as a quote
   -t, --timezone <TIMEZONE>
-          The IANA time zone database identifiers to use for the timestamp
-          [default: Asia/Tokyo]
-      --text <TEXT>
-          Path to the template file or a string for plain text (without
-          quote). Leave empty to use the default [env: TEMPLATE_TEXT=]
-      --text-quote <TEXT_QUOTE>
-          Path to the template file or a string for plain text (with quote).
-          Leave empty to use the default [env: TEMPLATE_TEXT_QUOTE=]
+          The IANA time zone database identifiers to use for the timestamp [default: Asia/Tokyo]
+      --plain-text <PLAIN_TEXT>
+          Path to the template file or a string for plain text (without quote). Leave empty to
+          use the default [env: TEMPLATE_PLAIN_TEXT=]
+      --plain-text-quote <PLAIN_TEXT_QUOTE>
+          Path to the template file or a string for plain text (with quote). Leave empty to use
+          the default [env: TEMPLATE_PLAIN_TEXT_QUOTE=]
       --rich-text <RICH_TEXT>
-          Path to the template file or a string for rich text (without quote).
-          Leave empty to use the default [env: TEMPLATE_RICH_TEXT=]
+          Path to the template file or a string for rich text (without quote). Leave empty to use
+          the default [env: TEMPLATE_RICH_TEXT=]
       --rich-text-quote <RICH_TEXT_QUOTE>
-          Path to the template file or a string for rich text (with quote).
-          Leave empty to use the template [env: TEMPLATE_RICH_TEXT_QUOTE=]
+          Path to the template file or a string for rich text (with quote). Leave empty to use
+          the template [env: TEMPLATE_RICH_TEXT_QUOTE=]
   -h, --help
           Print help
   -V, --version
@@ -56,12 +58,12 @@ Options:
 
 You can customize the output format by providing a path to the template file or a string via the options, or respective environment variables. The template file is a plain text file that contains the format of the output message. Leave empty to use the default. Under the hood, this program uses the [Tera](https://keats.github.io/tera/) template engine, allowing you to take full advantage of its capabilities.
 
-| Option              | Environment Variable       | For                       |
-|---------------------|----------------------------|---------------------------|
-| `--text`            | `TEMPLATE_TEXT`            | plain text, without quote |
-| `--text-quote`      | `TEMPLATE_TEXT_QUOTE`      | plain text, with quote    |
-| `--rich-text`       | `TEMPLATE_RICH_TEXT`       | rich text, without quote  |
-| `--rich-text-quote` | `TEMPLATE_RICH_TEXT_QUOTE` | rich text, with quote     |
+| Option               | Environment Variable        | For                       |
+|----------------------|-----------------------------|---------------------------|
+| `--plain-text`       | `TEMPLATE_PLAIN_TEXT`       | plain text, without quote |
+| `--plain-text-quote` | `TEMPLATE_PLAIN_TEXT_QUOTE` | plain text, with quote    |
+| `--rich-text`        | `TEMPLATE_RICH_TEXT`        | rich text, without quote  |
+| `--rich-text-quote`  | `TEMPLATE_RICH_TEXT_QUOTE`  | rich text, with quote     |
 
 The pre-defined variables, which you can use in the template i.e., `{{ variable }}`, are below.
 
