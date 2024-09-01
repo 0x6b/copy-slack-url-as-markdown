@@ -104,19 +104,21 @@ impl Client<Initialized> {
     /// - `url`: The [`url::URL`] of the Slack message.
     pub async fn retrieve(&self, url: &url::Url) -> Result<Client<Retrieved>> {
         let mut message = SlackMessage::try_new(url, &self.token)?;
-        let message = message.resolve().await?;
+        let message =
+            if self.quote { message.resolve(true).await? } else { message.resolve(false).await? };
 
         Ok(Client {
             state: Retrieved {
                 quote: self.quote,
                 tera: self.tera.clone(),
-                context: Self::setup_context(&message, &self.timezone).await?,
+                context: self.setup_context(&message, &self.timezone).await?,
             },
         })
     }
 
     // Set up the Tera template context from the Slack message just retrieved.
     async fn setup_context(
+        &self,
         message: &SlackMessage<MessageResolved<'_>>,
         timezone: &str,
     ) -> Result<Context> {
@@ -126,19 +128,24 @@ impl Client<Initialized> {
         context.insert(ChannelName.as_ref(), &message.channel_name);
         context.insert(UserName.as_ref(), &message.user_name);
         context.insert(Url.as_ref(), &message.url.as_str());
-        context.insert(ContextKey::Text.as_ref(), &message.body.lines().collect::<Vec<_>>());
 
-        let mut comrak_options = ComrakOptions {
-            render: RenderOptionsBuilder::default().unsafe_(true).escape(false).build()?,
-            ..ComrakOptions::default()
-        };
-        comrak_options.extension.autolink = true;
-        comrak_options.extension.strikethrough = true;
-        comrak_options.extension.table = true;
-        comrak_options.extension.tasklist = true;
-        comrak_options.extension.tagfilter = true;
-        context
-            .insert(ContextKey::Html.as_ref(), &markdown_to_html(&message.body, &comrak_options));
+        if self.quote {
+            context.insert(ContextKey::Text.as_ref(), &message.body.lines().collect::<Vec<_>>());
+
+            let mut comrak_options = ComrakOptions {
+                render: RenderOptionsBuilder::default().unsafe_(true).escape(false).build()?,
+                ..ComrakOptions::default()
+            };
+            comrak_options.extension.autolink = true;
+            comrak_options.extension.strikethrough = true;
+            comrak_options.extension.table = true;
+            comrak_options.extension.tasklist = true;
+            comrak_options.extension.tagfilter = true;
+            context.insert(
+                ContextKey::Html.as_ref(),
+                &markdown_to_html(&message.body, &comrak_options),
+            );
+        }
 
         [
             Timestamp,
