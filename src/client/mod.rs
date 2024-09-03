@@ -35,15 +35,15 @@ where
     }
 }
 
-impl Client<Uninitialized> {
+impl<'state, 'template> Client<Uninitialized<'state>> {
     /// Create a new Copier client with the given Slack API token, quote flag, timezone, and
     /// templates.
-    pub async fn from(state: Uninitialized) -> Result<Client<Initialized>> {
+    pub async fn from(state: Uninitialized<'state>) -> Result<Client<Initialized>> {
         Ok(Client {
             state: Initialized {
                 token: state.token,
                 quote: state.quote,
-                timezone: state.timezone.clone(),
+                timezone: state.timezone,
                 tera: Self::setup_tera(&state.templates).await?,
             },
         })
@@ -52,7 +52,7 @@ impl Client<Uninitialized> {
     // Set up the Tera template engine with the given [`Templates`], which might contain paths to
     // the template file, or just the template string.
     #[rustfmt::skip]
-    async fn setup_tera(arg: &Templates) -> Result<Tera> {
+    async fn setup_tera(arg: &'template Templates) -> Result<Tera> {
         let mut tera = Tera::default();
 
         for (name, pathlike, default) in [
@@ -70,7 +70,10 @@ impl Client<Uninitialized> {
     // Resolve the template content from the given pathlike. If the pathlike is not a valid path,
     // then return content as is assuming it's a template string. If no pathlike is given, then
     // return the default template string.
-    async fn get_template<'a>(input: &'a Option<String>, default: &'a str) -> &'a str {
+    async fn get_template(
+        input: &'template Option<String>,
+        default: &'template str,
+    ) -> &'template str {
         match input {
             Some(pathlike) => {
                 if PathBuf::from(&pathlike).exists() {
@@ -87,14 +90,14 @@ impl Client<Uninitialized> {
     }
 }
 
-impl Client<Initialized> {
+impl<'state> Client<Initialized<'state>> {
     /// Retrieve a Slack message from the given URL.
     ///
     /// # Arguments
     ///
     /// - `url`: The [`url::URL`] of the Slack message.
     pub async fn retrieve(&self, url: &url::Url) -> Result<Client<Retrieved>> {
-        let mut retriever = MessageRetriever::try_new(url, &self.token)?;
+        let mut retriever = MessageRetriever::try_new(url, self.token)?;
         let message = if self.quote {
             retriever.resolve(true).await?
         } else {
@@ -105,7 +108,7 @@ impl Client<Initialized> {
             state: Retrieved {
                 quote: self.quote,
                 tera: self.tera.clone(),
-                context: self.setup_context(&message, &self.timezone).await?,
+                context: self.setup_context(&message, self.timezone).await?,
             },
         })
     }
@@ -113,7 +116,7 @@ impl Client<Initialized> {
     // Set up the Tera template context from the Slack message just retrieved.
     async fn setup_context(
         &self,
-        message: &MessageRetriever<Resolved<'_>>,
+        message: &MessageRetriever<Resolved<'state>>,
         timezone: &str,
     ) -> Result<Context> {
         let mut context = Context::new();
