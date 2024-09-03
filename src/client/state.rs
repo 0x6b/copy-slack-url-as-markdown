@@ -28,13 +28,10 @@ impl State for Retrieved {}
 pub struct Uninitialized {
     /// Slack API token.
     pub token: String,
-
     /// Include the message body as a quote.
     pub quote: bool,
-
     /// The IANA time zone database identifiers to use for the timestamp.
     pub timezone: String,
-
     pub templates: Templates,
 }
 
@@ -42,10 +39,13 @@ pub struct Uninitialized {
 pub struct Initialized {
     /// Slack API token.
     pub token: String,
+
     /// Include the message body as a quote.
     pub quote: bool,
+
     /// The IANA time zone database identifiers to use for the timestamp.
     pub timezone: String,
+
     /// The Tera template engine with the templates set up.
     pub tera: Tera,
 }
@@ -54,8 +54,10 @@ pub struct Initialized {
 pub struct Retrieved {
     /// Include the message body as a quote.
     pub quote: bool,
+
     /// The tera template engine.
     pub tera: Tera,
+
     /// The Slack message data as a template context.
     pub context: Context,
 }
