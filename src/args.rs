@@ -26,12 +26,12 @@ pub struct Args {
     pub url: Option<String>,
 }
 
-impl From<&Args> for Uninitialized {
-    fn from(args: &Args) -> Self {
+impl<'a> From<&'a Args> for Uninitialized<'a> {
+    fn from(args: &'a Args) -> Self {
         Self {
-            token: args.token.clone(),
+            token: args.token.as_str(),
             quote: args.quote,
-            timezone: args.timezone.clone(),
+            timezone: args.timezone.as_str(),
             templates: args.templates.clone(),
         }
     }
