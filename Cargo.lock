@@ -379,7 +379,7 @@ dependencies = [
 
 [[package]]
 name = "copy-slack-url-as-markdown"
-version = "0.14.0"
+version = "0.14.1"
 dependencies = [
  "anyhow",
  "arboard",
@@ -1873,9 +1873,20 @@ dependencies = [
 ]
 
 [[package]]
+name = "slack_api"
+version = "0.3.1"
+source = "git+https://github.com/0x6b/slack_client?tag=v0.3.1#2cb67591d6fa08b7a84b9a7194e15715212c28a9"
+dependencies = [
+ "anyhow",
+ "mrkdwn2markdown",
+ "reqwest",
+ "serde",
+]
+
+[[package]]
 name = "slack_client"
-version = "0.2.0"
-source = "git+https://github.com/0x6b/slack_client?tag=v0.2.0#92f14fded7340954e736a75f39405fc7ca6c7dc9"
+version = "0.3.1"
+source = "git+https://github.com/0x6b/slack_client?tag=v0.3.1#2cb67591d6fa08b7a84b9a7194e15715212c28a9"
 dependencies = [
  "anyhow",
  "mrkdwn2markdown",
@@ -1884,6 +1895,7 @@ dependencies = [
  "serde",
  "serde_json",
  "serde_qs",
+ "slack_api",
  "slack_emojify",
  "url",
 ]

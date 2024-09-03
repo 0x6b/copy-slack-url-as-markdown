@@ -2,7 +2,7 @@ use std::{ops::Deref, path::PathBuf};
 
 use anyhow::Result;
 use comrak::{markdown_to_html, ComrakOptions, RenderOptionsBuilder};
-use slack_client::{message::state::Resolved as MessageResolved, SlackMessage};
+use slack_client::message_retriever::{state::Resolved, MessageRetriever};
 use state::{Initialized, Retrieved, State, Uninitialized};
 use strum::EnumProperty;
 use tera::{Context, Tera};
@@ -94,9 +94,12 @@ impl Client<Initialized> {
     ///
     /// - `url`: The [`url::URL`] of the Slack message.
     pub async fn retrieve(&self, url: &url::Url) -> Result<Client<Retrieved>> {
-        let mut message = SlackMessage::try_new(url, &self.token)?;
-        let message =
-            if self.quote { message.resolve(true).await? } else { message.resolve(false).await? };
+        let mut retriever = MessageRetriever::try_new(url, &self.token)?;
+        let message = if self.quote {
+            retriever.resolve(true).await?
+        } else {
+            retriever.resolve(false).await?
+        };
 
         Ok(Client {
             state: Retrieved {
@@ -110,7 +113,7 @@ impl Client<Initialized> {
     // Set up the Tera template context from the Slack message just retrieved.
     async fn setup_context(
         &self,
-        message: &SlackMessage<MessageResolved<'_>>,
+        message: &MessageRetriever<Resolved<'_>>,
         timezone: &str,
     ) -> Result<Context> {
         let mut context = Context::new();

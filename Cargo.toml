@@ -1,6 +1,6 @@
 [package]
 name = "copy-slack-url-as-markdown"
-version = "0.14.0"
+version = "0.14.1"
 edition = "2021"
 description = "Copy Slack URL as Markdown"
 
@@ -33,7 +33,7 @@ strum = "0.26.3"
 strum_macros = "0.26.4"
 
 # Slack API client
-slack_client = { git = "https://github.com/0x6b/slack_client", tag = "v0.2.0" }
+slack_client = { git = "https://github.com/0x6b/slack_client", tag = "v0.3.1" }
 
 # Markdown to HTML
 comrak = "0.27.0"
