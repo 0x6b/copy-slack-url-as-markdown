@@ -22,10 +22,11 @@ async fn main() -> Result<()> {
         Err(why) => bail!("failed to access system clipboard: {why}"),
     };
 
+    let text = clipboard.get_text();
     let text = match args.url {
-        Some(url) => url,
-        None => match clipboard.get_text() {
-            Ok(t) => t,
+        Some(ref url) => url,
+        None => match text {
+            Ok(ref t) => t,
             Err(why) => bail!("failed to get text from clipboard: {why}"),
         },
     };

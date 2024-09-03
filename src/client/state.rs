@@ -20,31 +20,31 @@ use crate::template::Templates;
 /// `Client<Uninitialized>` → `new()` → `Client<Initialized>` → `retrieve()` →
 /// `Client<Retrieved>` → `render()` → Your text
 pub trait State {}
-impl State for Uninitialized {}
-impl State for Initialized {}
+impl<'state> State for Uninitialized<'state> {}
+impl<'state> State for Initialized<'state> {}
 impl State for Retrieved {}
 
 /// Uninitialized state of the client, or the CLI arguments.
-pub struct Uninitialized {
+pub struct Uninitialized<'state> {
     /// Slack API token.
-    pub token: String,
+    pub token: &'state str,
     /// Include the message body as a quote.
     pub quote: bool,
     /// The IANA time zone database identifiers to use for the timestamp.
-    pub timezone: String,
+    pub timezone: &'state str,
     pub templates: Templates,
 }
 
 /// Initialized state of the client.
-pub struct Initialized {
+pub struct Initialized<'state> {
     /// Slack API token.
-    pub token: String,
+    pub token: &'state str,
 
     /// Include the message body as a quote.
     pub quote: bool,
 
     /// The IANA time zone database identifiers to use for the timestamp.
-    pub timezone: String,
+    pub timezone: &'state str,
 
     /// The Tera template engine with the templates set up.
     pub tera: Tera,
