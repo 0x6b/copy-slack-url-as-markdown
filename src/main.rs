@@ -31,7 +31,7 @@ async fn main() -> Result<()> {
         },
     };
 
-    let url = match Url::parse(text.trim()) {
+    let url = match Url::parse(text) {
         Ok(u) => u,
         Err(why) => {
             bail!("The provided text '{}...' is not a valid URL: {why}", text.split_at(40).0)
