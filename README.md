@@ -104,7 +104,7 @@ See [`templates/`](templates) for the default templates.
 
 ## Limitations
 
-For quoting, only the [Rich text block](https://api.slack.com/reference/block-kit/blocks#rich_text) is supported. Other types will be ignored. I don't believe a machine-generated message is worth copying, but welcome any PRs to add support for other types.
+For quoting, only the [Rich text block](https://api.slack.com/reference/block-kit/blocks#rich_text) is supported. Other types will be ignored, or end up with panic in the worst case. I don't believe a machine-generated message is worth copying, but welcome any PRs to add support for other types.
 
 ## License
 
