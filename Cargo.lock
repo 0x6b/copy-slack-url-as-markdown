@@ -98,15 +98,15 @@ dependencies = [
 
 [[package]]
 name = "anyhow"
-version = "1.0.87"
+version = "1.0.89"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "10f00e1f6e58a40e807377c75c6a7f97bf9044fab57816f2414e6f5f4499d7b8"
+checksum = "86fdf8605db99b54d3cd748a44c6d04df638eb5dafb219b135d0149bd0db01f6"
 
 [[package]]
 name = "arboard"
-version = "3.4.0"
+version = "3.4.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "9fb4009533e8ff8f1450a5bcbc30f4242a1d34442221f72314bea1f5dc9c7f89"
+checksum = "df099ccb16cd014ff054ac1bf392c67feeef57164b05c42f037cd40f5d4357f4"
 dependencies = [
  "clipboard-win",
  "core-graphics",
@@ -379,7 +379,7 @@ dependencies = [
 
 [[package]]
 name = "copy-slack-url-as-markdown"
-version = "0.14.4"
+version = "0.14.5"
 dependencies = [
  "anyhow",
  "arboard",
@@ -1122,8 +1122,8 @@ dependencies = [
 
 [[package]]
 name = "mrkdwn2markdown"
-version = "0.2.0"
-source = "git+https://github.com/0x6b/mrkdwn2markdown?tag=v0.2.0#168d0d58539a32a7918df5d1a4b2b62d9aeeed6a"
+version = "0.2.1"
+source = "git+https://github.com/0x6b/mrkdwn2markdown?tag=v0.2.1#6ed1823c61eb32baff43f1bf38ffcd1dc7ff3881"
 dependencies = [
  "serde",
  "serde_json",
@@ -1874,8 +1874,8 @@ dependencies = [
 
 [[package]]
 name = "slack_api"
-version = "0.3.2"
-source = "git+https://github.com/0x6b/slack_client?tag=v0.3.2#f62de4bc21f0db50486fa84ada5d9b9b33386522"
+version = "0.3.3"
+source = "git+https://github.com/0x6b/slack_client?tag=v0.3.3#9ef1c767888a3b0a016af03f7881bc4c2b2c972e"
 dependencies = [
  "anyhow",
  "mrkdwn2markdown",
@@ -1885,11 +1885,10 @@ dependencies = [
 
 [[package]]
 name = "slack_client"
-version = "0.3.2"
-source = "git+https://github.com/0x6b/slack_client?tag=v0.3.2#f62de4bc21f0db50486fa84ada5d9b9b33386522"
+version = "0.3.3"
+source = "git+https://github.com/0x6b/slack_client?tag=v0.3.3#9ef1c767888a3b0a016af03f7881bc4c2b2c972e"
 dependencies = [
  "anyhow",
- "mrkdwn2markdown",
  "regex",
  "reqwest",
  "serde",
