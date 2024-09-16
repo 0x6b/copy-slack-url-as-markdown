@@ -10,10 +10,10 @@ path = "src/main.rs"
 
 [dependencies]
 # Error handling
-anyhow = "1.0.87"
+anyhow = "1.0.89"
 
 # Clipboard
-arboard = "3.4.0"
+arboard = "3.4.1"
 
 # Command line arguments
 clap = { version = "4.5.17", features = ["derive", "env", "wrap_help"] }
@@ -33,7 +33,7 @@ strum = "0.26.3"
 strum_macros = "0.26.4"
 
 # Slack API client
-slack_client = { git = "https://github.com/0x6b/slack_client", tag = "v0.3.2" }
+slack_client = { git = "https://github.com/0x6b/slack_client", tag = "v0.3.3" }
 
 # Markdown to HTML
 comrak = "0.28.0"
