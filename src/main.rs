@@ -31,12 +31,12 @@ async fn main() -> Result<()> {
         },
     };
 
-    let url = match Url::parse(text) {
-        Ok(u) => u,
-        Err(why) => {
-            bail!("The provided text '{}...' is not a valid URL: {why}", text.split_at(40).0)
-        }
-    };
+    let url = Url::parse(text).map_err(|why| {
+        anyhow!(
+            "The provided text '{}...' is not a valid URL: {why}",
+            text.chars().take(40).collect::<String>().trim()
+        )
+    })?;
 
     let message = match client.retrieve(&url).await {
         Ok(m) => m,
