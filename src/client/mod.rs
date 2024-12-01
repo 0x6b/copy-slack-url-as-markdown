@@ -1,7 +1,7 @@
 use std::{ops::Deref, path::PathBuf};
 
 use anyhow::Result;
-use comrak::{markdown_to_html, ComrakOptions, RenderOptionsBuilder};
+use comrak::{markdown_to_html, ComrakOptions, RenderOptions};
 use slack_client::message_retriever::{state::Resolved, MessageRetriever};
 use state::{Initialized, Retrieved, State, Uninitialized};
 use strum::EnumProperty;
@@ -35,10 +35,10 @@ where
     }
 }
 
-impl<'state, 'template> Client<Uninitialized<'state>> {
+impl<'template> Client<Uninitialized<'_>> {
     /// Create a new Copier client with the given Slack API token, quote flag, timezone, and
     /// templates.
-    pub async fn from(state: Uninitialized<'state>) -> Result<Client<Initialized>> {
+    pub async fn from(state: Uninitialized<'_>) -> Result<Client<Initialized>> {
         Ok(Client {
             state: Initialized {
                 token: state.token,
@@ -126,7 +126,7 @@ impl<'state> Client<Initialized<'state>> {
             context.insert(Text.as_ref(), &message.body.lines().collect::<Vec<_>>());
 
             let mut comrak_options = ComrakOptions {
-                render: RenderOptionsBuilder::default().unsafe_(true).escape(false).build()?,
+                render: RenderOptions::builder().unsafe_(true).escape(false).build(),
                 ..ComrakOptions::default()
             };
             comrak_options.extension.autolink = true;
