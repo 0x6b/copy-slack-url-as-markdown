@@ -404,7 +404,7 @@ dependencies = [
 
 [[package]]
 name = "copy-slack-url-as-markdown"
-version = "0.14.6"
+version = "0.14.7"
 dependencies = [
  "anyhow",
  "arboard",
