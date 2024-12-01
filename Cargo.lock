@@ -1262,9 +1262,10 @@ dependencies = [
 
 [[package]]
 name = "mrkdwn2markdown"
-version = "0.2.1"
-source = "git+https://github.com/0x6b/mrkdwn2markdown?tag=v0.2.1#6ed1823c61eb32baff43f1bf38ffcd1dc7ff3881"
+version = "0.4.0"
+source = "git+https://github.com/0x6b/mrkdwn2markdown?tag=v0.4.0#c8d05287050b45851b4b8d200138a199eda7e8fa"
 dependencies = [
+ "regex",
  "serde",
  "serde_json",
 ]
@@ -2024,10 +2025,9 @@ dependencies = [
 
 [[package]]
 name = "slack_api"
-version = "0.3.3"
-source = "git+https://github.com/0x6b/slack_client?tag=v0.3.3#9ef1c767888a3b0a016af03f7881bc4c2b2c972e"
+version = "0.7.0"
+source = "git+https://github.com/0x6b/slack_client?tag=v0.7.0#29bf292870d0ca0633df94f33b288bbb67809758"
 dependencies = [
- "anyhow",
  "mrkdwn2markdown",
  "reqwest",
  "serde",
@@ -2035,8 +2035,8 @@ dependencies = [
 
 [[package]]
 name = "slack_client"
-version = "0.3.3"
-source = "git+https://github.com/0x6b/slack_client?tag=v0.3.3#9ef1c767888a3b0a016af03f7881bc4c2b2c972e"
+version = "0.7.0"
+source = "git+https://github.com/0x6b/slack_client?tag=v0.7.0#29bf292870d0ca0633df94f33b288bbb67809758"
 dependencies = [
  "anyhow",
  "regex",
