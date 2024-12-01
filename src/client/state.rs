@@ -20,8 +20,8 @@ use crate::template::Templates;
 /// `Client<Uninitialized>` → `new()` → `Client<Initialized>` → `retrieve()` →
 /// `Client<Retrieved>` → `render()` → Your text
 pub trait State {}
-impl<'state> State for Uninitialized<'state> {}
-impl<'state> State for Initialized<'state> {}
+impl State for Uninitialized<'_> {}
+impl State for Initialized<'_> {}
 impl State for Retrieved {}
 
 /// Uninitialized state of the client, or the CLI arguments.

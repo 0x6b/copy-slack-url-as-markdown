@@ -35,10 +35,10 @@ where
     }
 }
 
-impl<'state, 'template> Client<Uninitialized<'state>> {
+impl<'template> Client<Uninitialized<'_>> {
     /// Create a new Copier client with the given Slack API token, quote flag, timezone, and
     /// templates.
-    pub async fn from(state: Uninitialized<'state>) -> Result<Client<Initialized>> {
+    pub async fn from(state: Uninitialized<'_>) -> Result<Client<Initialized>> {
         Ok(Client {
             state: Initialized {
                 token: state.token,
