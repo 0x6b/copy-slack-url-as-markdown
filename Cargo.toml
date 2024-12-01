@@ -10,22 +10,22 @@ path = "src/main.rs"
 
 [dependencies]
 # Error handling
-anyhow = "1.0.89"
+anyhow = "1.0.93"
 
 # Clipboard
 arboard = "3.4.1"
 
 # Command line arguments
-clap = { version = "4.5.17", features = ["derive", "env", "wrap_help"] }
+clap = { version = "4.5.21", features = ["derive", "env", "wrap_help"] }
 
 # Async runtime
-tokio = { version = "1.40.0", features = ["rt", "macros", "net", "rt-multi-thread", "fs"] }
+tokio = { version = "1.41.1", features = ["rt", "macros", "net", "rt-multi-thread", "fs"] }
 
 # URL parsing
-url = "2.5.2"
+url = "2.5.4"
 
 # Date and time
-jiff = "0.1.13"
+jiff = "0.1.15"
 
 # Templating
 tera = "1.20.0"
@@ -36,7 +36,7 @@ strum_macros = "0.26.4"
 slack_client = { git = "https://github.com/0x6b/slack_client", tag = "v0.3.3" }
 
 # Markdown to HTML
-comrak = "0.28.0"
+comrak = "0.31.0"
 
 [profile.dev]
 debug = 0
