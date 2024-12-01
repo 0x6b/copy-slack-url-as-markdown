@@ -33,7 +33,7 @@ strum = "0.26.3"
 strum_macros = "0.26.4"
 
 # Slack API client
-slack_client = { git = "https://github.com/0x6b/slack_client", tag = "v0.3.3" }
+slack_client = { git = "https://github.com/0x6b/slack_client", tag = "v0.7.0" }
 
 # Markdown to HTML
 comrak = "0.31.0"
