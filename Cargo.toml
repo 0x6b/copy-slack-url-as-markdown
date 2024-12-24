@@ -5,7 +5,7 @@ edition = "2021"
 description = "Copy Slack URL as Markdown"
 
 [[bin]]
-name = "s2m"
+name = "sam"
 path = "src/main.rs"
 
 [dependencies]
