@@ -21,10 +21,10 @@ Following permission scopes would also be required to get the message to copy, d
 ## Usage
 
 ```console
-$ s2m --help
+$ sam --help
 Copy Slack URL as Markdown
 
-Usage: s2m [OPTIONS] --token <TOKEN> [URL]
+Usage: sam [OPTIONS] --token <TOKEN> [URL]
 
 Arguments:
   [URL]  Slack message URL to process. Leave empty to use the clipboard
