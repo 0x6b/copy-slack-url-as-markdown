@@ -1,6 +1,6 @@
 [package]
 name = "copy-slack-url-as-markdown"
-version = "0.15.0"
+version = "0.15.1"
 edition = "2021"
 description = "Copy Slack URL as Markdown"
 
@@ -10,22 +10,22 @@ path = "src/main.rs"
 
 [dependencies]
 # Error handling
-anyhow = "1.0.94"
+anyhow = "1.0.95"
 
 # Clipboard
 arboard = "3.4.1"
 
 # Command line arguments
-clap = { version = "4.5.23", features = ["derive", "env", "wrap_help"] }
+clap = { version = "4.5.26", features = ["derive", "env", "wrap_help"] }
 
 # Async runtime
-tokio = { version = "1.42.0", features = ["rt", "macros", "net", "rt-multi-thread", "fs"] }
+tokio = { version = "1.43.0", features = ["rt", "macros", "net", "rt-multi-thread", "fs"] }
 
 # URL parsing
 url = "2.5.4"
 
 # Date and time
-jiff = "0.1.15"
+jiff = "0.1.21"
 
 # Templating
 tera = "1.20.0"
@@ -33,10 +33,10 @@ strum = "0.26.3"
 strum_macros = "0.26.4"
 
 # Slack API client
-slack_client = { git = "https://github.com/0x6b/slack_client", tag = "v0.7.1" }
+slack_client = { git = "https://github.com/0x6b/slack_client", tag = "v0.8.1" }
 
 # Markdown to HTML
-comrak = "0.31.0"
+comrak = "0.33.0"
 
 [profile.dev]
 debug = 0
