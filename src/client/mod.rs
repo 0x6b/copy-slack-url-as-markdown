@@ -116,7 +116,7 @@ impl<'state> Client<Initialized<'state>> {
         timezone: &str,
     ) -> Result<Context> {
         let mut context = Context::new();
-        let datetime = jiff::Timestamp::from_microsecond(message.ts)?.intz(timezone)?;
+        let datetime = jiff::Timestamp::from_microsecond(message.ts)?.in_tz(timezone)?;
 
         context.insert(ChannelName.as_ref(), &message.channel_name);
         context.insert(UserName.as_ref(), &message.user_name);
