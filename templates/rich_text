@@ -1,1 +1,1 @@
-<a href="{{ url }}">Slack#{{ channel_name }}</a>
+<a href="{{ url }}">Slack#{{ channel_name }}{% if is_private_channel %}🔒{% endif %}</a>

@@ -119,6 +119,7 @@ impl<'state> Client<Initialized<'state>> {
         let datetime = jiff::Timestamp::from_microsecond(message.ts)?.in_tz(timezone)?;
 
         context.insert(ChannelName.as_ref(), &message.channel_name);
+        context.insert(IsPrivateChannel.as_ref(), &message.is_private_channel);
         context.insert(UserName.as_ref(), &message.user_name);
         context.insert(Url.as_ref(), &message.url.as_str());
 

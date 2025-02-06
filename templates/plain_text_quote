@@ -1,4 +1,4 @@
-From **@{{ user_name }}** in [Slack#{{ channel_name }}]({{ url }}) on {{ timestamp }}:
+From **@{{ user_name }}** in [Slack#{{ channel_name }}{% if is_private_channel %}🔒{% endif %}]({{ url }}) on {{ timestamp }}:
 
 {% for line in text %}> {{ line | trim_end }}
 {% endfor %}
