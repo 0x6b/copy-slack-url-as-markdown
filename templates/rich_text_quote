@@ -1,4 +1,4 @@
-<p>From <strong>@{{ user_name }}</strong> in <a href="{{ url }}">Slack#{{ channel_name }}</a> on {{ timestamp }}:</p>
+<p>From <strong>@{{ user_name }}</strong> in <a href="{{ url }}">Slack#{{ channel_name }}{% if is_private_channel %}🔒{% endif %}</a> on {{ timestamp }}:</p>
 <blockquote style="color: rgb(96, 96, 96);">
 {{ html }}
 </blockquote>

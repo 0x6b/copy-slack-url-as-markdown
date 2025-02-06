@@ -22,6 +22,15 @@ pub enum ContextKey {
     ChannelName,
 
     #[strum(
+        serialize = "is_private_channel",
+        props(
+            description = "Whether the channel is a private channel or not.",
+            example = "false"
+        )
+    )]
+    IsPrivateChannel,
+
+    #[strum(
         serialize = "user_name",
         props(
             description = "The name of the user who posted the message.",

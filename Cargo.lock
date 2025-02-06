@@ -2014,8 +2014,8 @@ dependencies = [
 
 [[package]]
 name = "slack_api"
-version = "0.9.0"
-source = "git+https://github.com/0x6b/slack_client?tag=v0.9.0#90c00e1f61429ad0009f2f0ce4f282cbb825454a"
+version = "0.10.0"
+source = "git+https://github.com/0x6b/slack_client?tag=v0.10.0#0437e15efa9557a7b1b30318b2cac9af6f257771"
 dependencies = [
  "mrkdwn2markdown",
  "reqwest",
@@ -2024,8 +2024,8 @@ dependencies = [
 
 [[package]]
 name = "slack_client"
-version = "0.9.0"
-source = "git+https://github.com/0x6b/slack_client?tag=v0.9.0#90c00e1f61429ad0009f2f0ce4f282cbb825454a"
+version = "0.10.0"
+source = "git+https://github.com/0x6b/slack_client?tag=v0.10.0#0437e15efa9557a7b1b30318b2cac9af6f257771"
 dependencies = [
  "anyhow",
  "regex",
