@@ -16,7 +16,7 @@ anyhow = "1.0.95"
 arboard = "3.4.1"
 
 # Command line arguments
-clap = { version = "4.5.27", features = ["derive", "env", "wrap_help"] }
+clap = { version = "4.5.28", features = ["derive", "env", "wrap_help"] }
 
 # Async runtime
 tokio = { version = "1.43.0", features = ["rt", "macros", "net", "rt-multi-thread", "fs"] }
@@ -25,7 +25,7 @@ tokio = { version = "1.43.0", features = ["rt", "macros", "net", "rt-multi-threa
 url = "2.5.4"
 
 # Date and time
-jiff = "0.1.25"
+jiff = "0.1.29"
 
 # Templating
 tera = "1.20.0"
