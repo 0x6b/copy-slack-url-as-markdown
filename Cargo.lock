@@ -1250,8 +1250,8 @@ dependencies = [
 
 [[package]]
 name = "mrkdwn2markdown"
-version = "0.4.0"
-source = "git+https://github.com/0x6b/mrkdwn2markdown?tag=v0.4.0#c8d05287050b45851b4b8d200138a199eda7e8fa"
+version = "0.4.1"
+source = "git+https://github.com/0x6b/mrkdwn2markdown?tag=v0.4.1#dc9e7ae72ad2cc1a51dc2709484f41c39dae4b79"
 dependencies = [
  "regex",
  "serde",
@@ -2015,8 +2015,8 @@ dependencies = [
 
 [[package]]
 name = "slack_api"
-version = "0.10.0"
-source = "git+https://github.com/0x6b/slack_client?tag=v0.10.0#0437e15efa9557a7b1b30318b2cac9af6f257771"
+version = "0.10.1"
+source = "git+https://github.com/0x6b/slack_client?tag=v0.10.1#acfe6c4d4c513e0db203eb2ab10253ef5d35046f"
 dependencies = [
  "mrkdwn2markdown",
  "reqwest",
@@ -2025,8 +2025,8 @@ dependencies = [
 
 [[package]]
 name = "slack_client"
-version = "0.10.0"
-source = "git+https://github.com/0x6b/slack_client?tag=v0.10.0#0437e15efa9557a7b1b30318b2cac9af6f257771"
+version = "0.10.1"
+source = "git+https://github.com/0x6b/slack_client?tag=v0.10.1#acfe6c4d4c513e0db203eb2ab10253ef5d35046f"
 dependencies = [
  "anyhow",
  "regex",
@@ -2041,8 +2041,8 @@ dependencies = [
 
 [[package]]
 name = "slack_emojify"
-version = "0.1.1"
-source = "git+https://github.com/0x6b/slack_emojify?tag=v0.1.1#402ec3550a5ad1d0e60eaeb1ff3630da045ec10e"
+version = "0.1.2"
+source = "git+https://github.com/0x6b/slack_emojify?tag=v0.1.2#2a3ded444eaa69f4b6a9b9fd8907bccc0fd4e8e9"
 dependencies = [
  "regex",
  "serde_json",
